@@ -1,5 +1,6 @@
 package br.com.ecommerce.ecommerce.model;
 
+import br.com.ecommerce.ecommerce.enums.TipoEndereco;
 import jakarta.persistence.*;
 
 import java.io.Serializable;
@@ -13,6 +14,9 @@ public class Endereco implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_endereco")
     private Long id;
+
+    @Enumerated(EnumType.STRING)
+    private TipoEndereco tipoEndereco;
 
     private String rua;
     private String cep;
@@ -37,6 +41,14 @@ public class Endereco implements Serializable {
     @Override
     public int hashCode() {
         return Objects.hash(id);
+    }
+
+    public TipoEndereco getTipoEndereco() {
+        return tipoEndereco;
+    }
+
+    public void setTipoEndereco(TipoEndereco tipoEndereco) {
+        this.tipoEndereco = tipoEndereco;
     }
 
     public Long getId() {
