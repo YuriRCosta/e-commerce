@@ -11,7 +11,7 @@ import java.util.Objects;
 @Entity
 @Table(name = "conta_receber")
 @SequenceGenerator(name = "seq_conta_receber", sequenceName = "seq_conta_receber", allocationSize = 1, initialValue = 1)
-public class ContaReceber {
+public class ContaReceber implements Serializable{
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_conta_receber")

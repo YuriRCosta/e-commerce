@@ -3,6 +3,7 @@ package br.com.ecommerce.ecommerce.model;
 import br.com.ecommerce.ecommerce.enums.StatusContaPagar;
 import jakarta.persistence.*;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.Objects;
@@ -10,7 +11,7 @@ import java.util.Objects;
 @Entity
 @Table(name = "conta_pagar")
 @SequenceGenerator(name = "seq_conta_pagar", sequenceName = "seq_conta_pagar", allocationSize = 1, initialValue = 1)
-public class ContaPagar {
+public class ContaPagar implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_conta_pagar")
