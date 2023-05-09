@@ -15,7 +15,9 @@ public class StatusRastreio implements Serializable {
     private Long id;
 
     private String centroDistribuicao;
+
     private String cidade;
+
     private String status;
 
     @ManyToOne

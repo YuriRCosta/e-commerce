@@ -14,18 +14,24 @@ public class NotaFiscalVenda implements Serializable{
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_nota_fiscal_venda")
     private Long id;
 
+    @Column(nullable = false)
     private String numeroNota;
+
+    @Column(nullable = false)
     private String numeroSerie;
+
+    @Column(nullable = false)
     private String tipo;
 
     @OneToOne
     @JoinColumn(name = "venda_compra_loja_virtual_id", nullable = false, foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, name = "venda_compra_loja_virtual_fk"))
     private VendaCompraLojaVirtual vendaCompraLojaVirtual;
 
-    @Column(columnDefinition = "text")
+
+    @Column(columnDefinition = "text", nullable = false)
     private String xml;
 
-    @Column(columnDefinition = "text")
+    @Column(columnDefinition = "text", nullable = false)
     private String pdf;
 
     @Override

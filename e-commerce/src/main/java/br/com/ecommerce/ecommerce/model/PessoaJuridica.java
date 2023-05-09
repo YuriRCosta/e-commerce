@@ -10,18 +10,32 @@ import jakarta.persistence.Table;
 @PrimaryKeyJoinColumn(name = "id")
 public class PessoaJuridica extends Pessoa{
 
+    @Column(nullable = false)
     private String cnpj;
 
-    @Column(name = "insc_estadual")
+    @Column(name = "insc_estadual", nullable = false)
     private String inscEstadual;
 
-    @Column(name = "nome_fantasia")
+    @Column(name = "insc_municipal")
+    private String inscMunicipal;
+
+    @Column(name = "nome_fantasia", nullable = false)
     private String nomeFantasia;
 
-    @Column(name = "razao_social")
+    @Column(name = "razao_social", nullable = false)
     private String razaoSocial;
 
     private String categoria;
+
+    public String getInscMunicipal() {
+        return inscMunicipal;
+    }
+
+    public void setInscMunicipal(String inscMunicipal) {
+        this.inscMunicipal = inscMunicipal;
+    }
+
+
 
     public String getCnpj() {
         return cnpj;
