@@ -4,8 +4,12 @@ import br.com.ecommerce.ecommerce.model.Acesso;
 import br.com.ecommerce.ecommerce.repository.AcessoRepository;
 import br.com.ecommerce.ecommerce.service.AcessoService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
+
+import java.util.Optional;
 
 @RestController
 public class AcessoController {
@@ -17,6 +21,10 @@ public class AcessoController {
 
     @PostMapping("/salvarAcesso")
     public ResponseEntity<Acesso> salvarAcesso(@RequestBody Acesso acesso) {
+        Optional<Acesso> acessoExistente = acessoRepository.findByDescricao(acesso.getDescricao());
+        if (acessoExistente.isPresent()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Já existe um Acesso com a mesma descrição.");
+        }
         Acesso acessoSalvo = acessoService.save(acesso);
         return ResponseEntity.ok(acessoSalvo);
     }

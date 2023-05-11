@@ -1,5 +1,6 @@
 package br.com.ecommerce.ecommerce.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import org.springframework.security.core.GrantedAuthority;
 
@@ -12,9 +13,10 @@ public class Acesso implements GrantedAuthority {
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_acesso")
     private Long id;
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String descricao;
 
+    @JsonIgnore
     @Override
     public String getAuthority() {
         return this.descricao;
