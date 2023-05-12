@@ -2,10 +2,10 @@ package br.com.ecommerce.ecommerce;
 
 import br.com.ecommerce.ecommerce.model.dto.ObjetoErro;
 import org.hibernate.exception.ConstraintViolationException;
+import org.postgresql.util.PSQLException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.postgresql.util.PSQLException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -22,9 +22,19 @@ public class ControleExcecoes extends ResponseEntityExceptionHandler {
 
     private final String SETA = " --> ";
 
+    @ExceptionHandler(ExceptionECommerce.class)
+    public ResponseEntity<Object> handleExceptionCustom(ExceptionECommerce ex) {
+        ObjetoErro objetoErro = new ObjetoErro();
+        objetoErro.setError(ex.getMessage());
+        objetoErro.setCode(HttpStatus.OK.toString());
+
+        return new ResponseEntity<>(objetoErro, HttpStatus.OK);
+    }
+
     @ExceptionHandler({Exception.class, RuntimeException.class, Throwable.class})
     protected ResponseEntity<Object> handleExceptionInternal(Exception ex, Object body, HttpHeaders headers,
-                                                             HttpStatus statusCode, WebRequest request) {
+                                           HttpStatus statusCode, WebRequest request) {
+        ObjetoErro objetoErro = new ObjetoErro();
         StringBuilder sb = new StringBuilder();
 
         if(ex instanceof MethodArgumentNotValidException) {
@@ -36,10 +46,11 @@ public class ControleExcecoes extends ResponseEntityExceptionHandler {
             sb.append(ex.getMessage());
         }
 
-        ObjetoErro objetoErro = new ObjetoErro();
         objetoErro.setError(sb.toString());
         objetoErro.setCode(statusCode != null ? statusCode.value() + SETA + statusCode.getReasonPhrase() : HttpStatus.INTERNAL_SERVER_ERROR.value() + SETA + HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase());
-        return new ResponseEntity<>(objetoErro, headers, statusCode != null ? statusCode : HttpStatus.INTERNAL_SERVER_ERROR);
+        ex.printStackTrace();
+
+        return new ResponseEntity<>(objetoErro, statusCode != null ? statusCode : HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @ExceptionHandler({DataIntegrityViolationException.class, ConstraintViolationException.class, PSQLException.class, SQLException.class})

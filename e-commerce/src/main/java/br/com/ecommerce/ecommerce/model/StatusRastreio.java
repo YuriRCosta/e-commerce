@@ -16,6 +16,10 @@ public class StatusRastreio implements Serializable {
 
     private String centroDistribuicao;
 
+    @ManyToOne(targetEntity = Pessoa.class)
+    @JoinColumn(name = "empresa_id", nullable = false, foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, name = "empresa_fk"))
+    private Pessoa empresa;
+
     private String cidade;
 
     private String status;
@@ -35,6 +39,14 @@ public class StatusRastreio implements Serializable {
     @Override
     public int hashCode() {
         return Objects.hash(id);
+    }
+
+    public Pessoa getEmpresa() {
+        return empresa;
+    }
+
+    public void setEmpresa(Pessoa empresa) {
+        this.empresa = empresa;
     }
 
     public VendaCompraLojaVirtual getVendaCompraLojaVirtual() {

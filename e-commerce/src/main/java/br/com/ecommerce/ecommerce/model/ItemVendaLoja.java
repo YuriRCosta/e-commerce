@@ -17,6 +17,10 @@ public class ItemVendaLoja implements Serializable{
     @Column(nullable = false)
     private Double quantidade;
 
+    @ManyToOne(targetEntity = Pessoa.class)
+    @JoinColumn(name = "empresa_id", nullable = false, foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, name = "empresa_fk"))
+    private Pessoa empresa;
+
     @ManyToOne
     @JoinColumn(name = "produto_id", nullable = false, foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, name = "produto_fk"))
     private Produto produto;
@@ -36,6 +40,14 @@ public class ItemVendaLoja implements Serializable{
     @Override
     public int hashCode() {
         return Objects.hash(id);
+    }
+
+    public Pessoa getEmpresa() {
+        return empresa;
+    }
+
+    public void setEmpresa(Pessoa empresa) {
+        this.empresa = empresa;
     }
 
     public Long getId() {

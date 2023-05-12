@@ -10,7 +10,7 @@ import jakarta.persistence.Table;
 @PrimaryKeyJoinColumn(name = "id")
 public class PessoaJuridica extends Pessoa{
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String cnpj;
 
     @Column(name = "insc_estadual", nullable = false)

@@ -14,6 +14,10 @@ public class NotaFiscalVenda implements Serializable{
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_nota_fiscal_venda")
     private Long id;
 
+    @ManyToOne(targetEntity = Pessoa.class)
+    @JoinColumn(name = "empresa_id", nullable = false, foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, name = "empresa_fk"))
+    private Pessoa empresa;
+
     @Column(nullable = false)
     private String numeroNota;
 
@@ -45,6 +49,14 @@ public class NotaFiscalVenda implements Serializable{
     @Override
     public int hashCode() {
         return Objects.hash(id);
+    }
+
+    public Pessoa getEmpresa() {
+        return empresa;
+    }
+
+    public void setEmpresa(Pessoa empresa) {
+        this.empresa = empresa;
     }
 
     public VendaCompraLojaVirtual getVendaCompraLojaVirtual() {

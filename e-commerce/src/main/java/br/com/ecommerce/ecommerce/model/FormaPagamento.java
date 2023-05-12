@@ -17,6 +17,10 @@ public class FormaPagamento implements Serializable {
     @Column(nullable = false)
     private String descricao;
 
+    @ManyToOne(targetEntity = Pessoa.class)
+    @JoinColumn(name = "empresa_id", nullable = false, foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, name = "empresa_fk"))
+    private Pessoa empresa;
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -28,6 +32,14 @@ public class FormaPagamento implements Serializable {
     @Override
     public int hashCode() {
         return Objects.hash(id);
+    }
+
+    public Pessoa getEmpresa() {
+        return empresa;
+    }
+
+    public void setEmpresa(Pessoa empresa) {
+        this.empresa = empresa;
     }
 
     public Long getId() {

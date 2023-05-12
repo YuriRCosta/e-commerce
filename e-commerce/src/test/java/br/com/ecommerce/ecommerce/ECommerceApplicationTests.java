@@ -7,36 +7,20 @@ import br.com.ecommerce.ecommerce.service.AcessoService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Profile;
-import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.DefaultMockMvcBuilder;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+import org.springframework.web.server.ResponseStatusException;
+
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-import java.util.Optional;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.context.WebApplicationContext;
 
 
 @Profile("dev")
@@ -80,11 +64,23 @@ class ECommerceApplicationTests {
 	}
 
 	@Test
-	void testCadastraAcesso() {
-		Acesso acesso = new Acesso();
-		acesso.setDescricao("ROLE_ADMIN");
-		acesso = acessoController.salvarAcesso(acesso).getBody();
-		Assertions.assertEquals(true, acesso.getId() > 0);
+	void salvarAcessoDeveRetornarBadRequestSeAcessoExistente() {
+		// Cria um acesso existente
+		Acesso acessoExistente = new Acesso();
+		acessoExistente.setDescricao("Acesso existente");
+		acessoRepository.save(acessoExistente);
+
+		// Cria um novo acesso com a mesma descrição
+		Acesso novoAcesso = new Acesso();
+		novoAcesso.setDescricao("Acesso existente");
+
+		// Chama o método salvarAcesso do controller
+		ResponseStatusException exception = Assertions.assertThrows(ResponseStatusException.class, () -> {
+			acessoController.salvarAcesso(novoAcesso);
+		});
+
+		// Verifica se a exceção contém a mensagem esperada
+		Assertions.assertTrue(exception.getMessage().contains("Já existe um Acesso com a mesma descrição."));
 	}
 
 	@Test

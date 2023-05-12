@@ -19,12 +19,13 @@ public class JWTApiAAutenticacaoFilter extends GenericFilterBean {
         Authentication authentication = null;
         try {
             authentication = new JWTTokenAutenticacaoService().getAuthentication((HttpServletResponse) response, (HttpServletRequest) request);
+
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+
+            chain.doFilter(request, response);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();
+            response.getWriter().write("Erro ao autenticar usuário!");
         }
-
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-
-        chain.doFilter(request, response);
     }
 }
