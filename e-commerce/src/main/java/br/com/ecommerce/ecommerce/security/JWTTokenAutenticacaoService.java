@@ -6,6 +6,7 @@ import br.com.ecommerce.ecommerce.repository.UsuarioRepository;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.SignatureException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -59,16 +60,18 @@ public class JWTTokenAutenticacaoService {
                     }
                 }
             }
-        } catch (ExpiredJwtException e) {
+        } catch (ExpiredJwtException | SignatureException e) {
             try {
-                response.getOutputStream().println("Seu token está expirado, faça o login ou informe um novo token para autenticação");
+                response.getOutputStream().println("Seu token esta invalido, faça o login ou informe um novo token para autenticação");
             } catch (Exception ex) {
-                ex.printStackTrace();
+                liberacaoCors(response);
             }
         }
         liberacaoCors(response);
         return null;
     }
+
+
 
     private void liberacaoCors(HttpServletResponse response) {
         if(response.getHeader("Access-Control-Allow-Origin") == null) {
