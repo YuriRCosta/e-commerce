@@ -36,41 +36,57 @@ public class PessoaUserService {
 
         Usuario usuarioPj = usuarioRepository.findUserByPessoa(pessoaJuridica.getId(), pessoaJuridica.getEmail());
 
+        if (isUserNovo(usuarioPj)) {
+            addNewUser(pessoaJuridica);
+        }
+
+        return pessoaJuridica;
+    }
+
+    public boolean isUserNovo( Usuario usuarioPj) {
         if (usuarioPj == null) {
             String constraint = usuarioRepository.consultaConstraintRole();
             if (constraint != null) {
                 jdbcTemplate.execute("begin; alter table usuarios_acesso drop constraint " + constraint + "; commit;");
+                return true;
             }
-
-            usuarioPj = new Usuario();
-            usuarioPj.setLogin(pessoaJuridica.getEmail());
-            usuarioPj.setEmpresa(pessoaJuridica.getEmpresa());
-            usuarioPj.setPessoa(pessoaJuridica);
-            String senha = "" + Calendar.getInstance().getTimeInMillis();
-            String senhaCrypt = new BCryptPasswordEncoder().encode(senha);
-
-            usuarioPj.setSenha(senhaCrypt);
-            usuarioRepository.save(usuarioPj);
-
-            usuarioRepository.insereAcessoUSerPj(usuarioPj.getId());
-
-            StringBuilder conteudo = new StringBuilder();
-
-            conteudo.append("<h1>Seu acesso foi gerado com sucesso!</h1>");
-            conteudo.append("<p>Seu login é: " + pessoaJuridica.getEmail() + "</p>");
-            conteudo.append("<p>Sua senha é: " + senha + "</p>");
-            conteudo.append("<br/>");
-            conteudo.append("<p>Atenciosamente, equipe E Commerce</p>");
-
-            try {
-                serviceSendEmail.enviarEmailHtml("Acesso gerado para E Commerce", conteudo.toString(), pessoaJuridica.getEmail());
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
+            return true;
         }
+        return false;
+    }
 
-        return pessoaJuridica;
+    public void addNewUser(PessoaJuridica pessoaJuridica) {
+        Usuario usuarioPj = new Usuario();
+
+        usuarioPj.setLogin(pessoaJuridica.getEmail());
+        usuarioPj.setEmpresa(pessoaJuridica);
+        usuarioPj.setPessoa(pessoaJuridica);
+
+        String senha = "" + Calendar.getInstance().getTimeInMillis();
+        String senhaCrypt = new BCryptPasswordEncoder().encode(senha);
+        usuarioPj.setSenha(senhaCrypt);
+
+        usuarioRepository.save(usuarioPj);
+
+        usuarioRepository.insereAcessoUSerPj(usuarioPj.getId());
+
+        envioEmailCadastro(senha, pessoaJuridica);
+    }
+
+    public void envioEmailCadastro(String senha, PessoaJuridica pessoaJuridica) {
+        StringBuilder conteudo = new StringBuilder();
+
+        conteudo.append("<h1>Seu acesso foi gerado com sucesso!</h1>");
+        conteudo.append("<p>Seu login é: " + pessoaJuridica.getEmail() + "</p>");
+        conteudo.append("<p>Sua senha é: " + senha + "</p>");
+        conteudo.append("<br/>");
+        conteudo.append("<p>Atenciosamente, equipe E Commerce</p>");
+
+        try {
+            serviceSendEmail.enviarEmailHtml("Acesso gerado para E Commerce", conteudo.toString(), pessoaJuridica.getEmail());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
 }
