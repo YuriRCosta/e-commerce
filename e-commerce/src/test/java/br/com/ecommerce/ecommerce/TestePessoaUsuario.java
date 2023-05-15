@@ -2,11 +2,14 @@ package br.com.ecommerce.ecommerce;
 
 import br.com.ecommerce.ecommerce.controller.AcessoController;
 import br.com.ecommerce.ecommerce.controller.PessoaController;
+import br.com.ecommerce.ecommerce.enums.TipoEndereco;
 import br.com.ecommerce.ecommerce.model.Acesso;
+import br.com.ecommerce.ecommerce.model.Endereco;
 import br.com.ecommerce.ecommerce.model.PessoaJuridica;
 import br.com.ecommerce.ecommerce.repository.AcessoRepository;
 import br.com.ecommerce.ecommerce.repository.PessoaRepository;
 import br.com.ecommerce.ecommerce.service.PessoaUserService;
+import br.com.ecommerce.ecommerce.service.ServiceSendEmail;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -49,6 +52,9 @@ class TestePessoaUsuario {
     @Autowired
     private WebApplicationContext wac;
 
+    @Autowired
+    private ServiceSendEmail serviceSendEmail;
+
     @Test
     void testCadPessoaFisica() {
         PessoaJuridica pessoaJuridica = new PessoaJuridica();
@@ -63,6 +69,51 @@ class TestePessoaUsuario {
         pessoaJuridica.setEmpresa(pessoaJuridica);
 
         pessoaRepository.save(pessoaJuridica);
+
+    }
+
+    @Test
+    void testCadPessoaJuridica() {
+        // Cria um acesso existente
+        PessoaJuridica pj = new PessoaJuridica();
+        pj.setNome("testete123ste");
+        pj.setCnpj("test123e123te123ste");
+        pj.setInscEstadual("12345678910");
+        pj.setNomeFantasia("João");
+        pj.setInscMunicipal("12345678910");
+        pj.setRazaoSocial("João");
+        pj.setTipoPessoal("JURIDICA");
+        pj.setEmail("teste112323tes3t12e@hotmail.com");
+        pj.setTelefone("test1231233eteste12");
+
+        Endereco endereco1 = new Endereco();
+        endereco1.setCep("12345678910");
+        endereco1.setCidade("testete123ste");
+        endereco1.setBairro("testete123ste");
+        endereco1.setUf("testete123ste");
+        endereco1.setEmpresa(pj);
+        endereco1.setPessoa(pj);
+        endereco1.setTipoEndereco(TipoEndereco.COBRANCA);
+        endereco1.setNumero("123");
+        endereco1.setRua("testete123ste");
+
+        Endereco endereco2 = new Endereco();
+        endereco2.setCep("12345678910");
+        endereco2.setCidade("testete123ste");
+        endereco2.setBairro("testete123ste");
+        endereco2.setUf("testete123ste");
+        endereco2.setEmpresa(pj);
+        endereco2.setPessoa(pj);
+        endereco2.setTipoEndereco(TipoEndereco.ENTREGA);
+        endereco2.setNumero("123");
+        endereco2.setRua("testete123ste");
+
+        pj.getEnderecos().add(endereco1);
+        pj.getEnderecos().add(endereco2);
+
+        pj = pessoaController.salvarPJ(pj).getBody();
+
+        Assertions.assertEquals(true, pj.getId() > 0);
 
     }
 
@@ -122,5 +173,6 @@ class TestePessoaUsuario {
 
         Assertions.assertEquals(acesso.getDescricao(), objetoRetorno.getDescricao());
     }
+
 
 }
