@@ -1,6 +1,9 @@
 package br.com.ecommerce.ecommerce.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -16,15 +19,22 @@ public abstract class Pessoa implements Serializable {
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_pessoa")
     private Long id;
 
+    @NotBlank(message = "O nome é obrigatório")
+    @NotNull(message = "O nome não pode ser nulo")
     @Column(nullable = false)
     private String nome;
 
+    @Email(message = "Email inválido")
+    @NotBlank(message = "O email é obrigatório")
+    @NotNull(message = "O email não pode ser nulo")
     @Column(nullable = false, unique = true)
     private String email;
 
     @Column(name = "tipo_pessoa")
     private String tipoPessoal;
 
+    @NotBlank(message = "O telefone é obrigatório")
+    @NotNull(message = "O telefone não pode ser nulo")
     @Column(nullable = false, unique = true)
     private String telefone;
 

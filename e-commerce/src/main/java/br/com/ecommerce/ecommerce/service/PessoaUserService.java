@@ -1,8 +1,10 @@
 package br.com.ecommerce.ecommerce.service;
 
+import br.com.ecommerce.ecommerce.model.PessoaFisica;
 import br.com.ecommerce.ecommerce.model.PessoaJuridica;
 import br.com.ecommerce.ecommerce.model.Usuario;
-import br.com.ecommerce.ecommerce.repository.PessoaRepository;
+import br.com.ecommerce.ecommerce.repository.PessoaFisicaRepository;
+import br.com.ecommerce.ecommerce.repository.PessoaJuridicaRepository;
 import br.com.ecommerce.ecommerce.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -18,7 +20,7 @@ public class PessoaUserService {
     private UsuarioRepository usuarioRepository;
 
     @Autowired
-    private PessoaRepository pessoaRepository;
+    private PessoaJuridicaRepository pessoaJuridicaRepository;
 
     @Autowired
     private ServiceSendEmail serviceSendEmail;
@@ -26,21 +28,41 @@ public class PessoaUserService {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
+    @Autowired
+    private PessoaFisicaRepository pessoaFisicaRepository;
+
     public PessoaJuridica salvarPessoaJuridica(PessoaJuridica pessoaJuridica) {
         for (int i = 0; i < pessoaJuridica.getEnderecos().size(); i++) {
             pessoaJuridica.getEnderecos().get(i).setPessoa(pessoaJuridica);
             pessoaJuridica.getEnderecos().get(i).setEmpresa(pessoaJuridica);
         }
 
-        pessoaJuridica = pessoaRepository.save(pessoaJuridica);
+        pessoaJuridica = pessoaJuridicaRepository.save(pessoaJuridica);
 
         Usuario usuarioPj = usuarioRepository.findUserByPessoa(pessoaJuridica.getId(), pessoaJuridica.getEmail());
 
         if (isUserNovo(usuarioPj)) {
-            addNewUser(pessoaJuridica);
+            addNewUserPJ(pessoaJuridica);
         }
 
         return pessoaJuridica;
+    }
+
+    public PessoaFisica salvarPessoaFisica(PessoaFisica pessoaFisica) {
+        for (int i = 0; i < pessoaFisica.getEnderecos().size(); i++) {
+            pessoaFisica.getEnderecos().get(i).setPessoa(pessoaFisica);
+            pessoaFisica.getEnderecos().get(i).setEmpresa(pessoaFisica);
+        }
+
+        pessoaFisica = pessoaFisicaRepository.save(pessoaFisica);
+
+        Usuario usuarioPj = usuarioRepository.findUserByPessoa(pessoaFisica.getId(), pessoaFisica.getEmail());
+
+        if (isUserNovo(usuarioPj)) {
+            addNewUserPF(pessoaFisica);
+        }
+
+        return pessoaFisica;
     }
 
     public boolean isUserNovo( Usuario usuarioPj) {
@@ -55,7 +77,7 @@ public class PessoaUserService {
         return false;
     }
 
-    public void addNewUser(PessoaJuridica pessoaJuridica) {
+    public void addNewUserPJ(PessoaJuridica pessoaJuridica) {
         Usuario usuarioPj = new Usuario();
 
         usuarioPj.setLogin(pessoaJuridica.getEmail());
@@ -68,12 +90,30 @@ public class PessoaUserService {
 
         usuarioRepository.save(usuarioPj);
 
-        usuarioRepository.insereAcessoUSerPj(usuarioPj.getId());
+        usuarioRepository.insereAcessoUSer(usuarioPj.getId());
 
-        envioEmailCadastro(senha, pessoaJuridica);
+        envioEmailCadastroPJ(senha, pessoaJuridica);
     }
 
-    public void envioEmailCadastro(String senha, PessoaJuridica pessoaJuridica) {
+    public void addNewUserPF(PessoaFisica pessoaFisica) {
+        Usuario usuarioPf = new Usuario();
+
+        usuarioPf.setLogin(pessoaFisica.getEmail());
+        usuarioPf.setEmpresa(pessoaFisica);
+        usuarioPf.setPessoa(pessoaFisica);
+
+        String senha = "" + Calendar.getInstance().getTimeInMillis();
+        String senhaCrypt = new BCryptPasswordEncoder().encode(senha);
+        usuarioPf.setSenha(senhaCrypt);
+
+        usuarioRepository.save(usuarioPf);
+
+        usuarioRepository.insereAcessoUSer(usuarioPf.getId());
+
+        envioEmailCadastroPF(senha, pessoaFisica);
+    }
+
+    public void envioEmailCadastroPJ(String senha, PessoaJuridica pessoaJuridica) {
         StringBuilder conteudo = new StringBuilder();
 
         conteudo.append("<h1>Seu acesso foi gerado com sucesso!</h1>");
@@ -84,6 +124,22 @@ public class PessoaUserService {
 
         try {
             serviceSendEmail.enviarEmailHtml("Acesso gerado para E Commerce", conteudo.toString(), pessoaJuridica.getEmail());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void envioEmailCadastroPF(String senha, PessoaFisica pessoaFisica) {
+        StringBuilder conteudo = new StringBuilder();
+
+        conteudo.append("<h1>Seu acesso foi gerado com sucesso!</h1>");
+        conteudo.append("<p>Seu login é: " + pessoaFisica.getEmail() + "</p>");
+        conteudo.append("<p>Sua senha é: " + senha + "</p>");
+        conteudo.append("<br/>");
+        conteudo.append("<p>Atenciosamente, equipe E Commerce</p>");
+
+        try {
+            serviceSendEmail.enviarEmailHtml("Acesso gerado para E Commerce", conteudo.toString(), pessoaFisica.getEmail());
         } catch (Exception e) {
             e.printStackTrace();
         }

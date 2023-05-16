@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface PessoaRepository extends JpaRepository<PessoaJuridica, Long> {
+public interface PessoaJuridicaRepository extends JpaRepository<PessoaJuridica, Long> {
 
     @Query("select p from PessoaJuridica p where p.cnpj = ?1")
     PessoaJuridica findByCnpj(String cnpj);

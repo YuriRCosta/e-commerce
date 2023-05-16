@@ -5,9 +5,10 @@ import br.com.ecommerce.ecommerce.controller.PessoaController;
 import br.com.ecommerce.ecommerce.enums.TipoEndereco;
 import br.com.ecommerce.ecommerce.model.Acesso;
 import br.com.ecommerce.ecommerce.model.Endereco;
+import br.com.ecommerce.ecommerce.model.PessoaFisica;
 import br.com.ecommerce.ecommerce.model.PessoaJuridica;
 import br.com.ecommerce.ecommerce.repository.AcessoRepository;
-import br.com.ecommerce.ecommerce.repository.PessoaRepository;
+import br.com.ecommerce.ecommerce.repository.PessoaJuridicaRepository;
 import br.com.ecommerce.ecommerce.service.PessoaUserService;
 import br.com.ecommerce.ecommerce.service.ServiceSendEmail;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -40,7 +41,7 @@ class TestePessoaUsuario {
     private PessoaController pessoaController;
 
     @Autowired
-    private PessoaRepository pessoaRepository;
+    private PessoaJuridicaRepository pessoaJuridicaRepository;
 
     @Autowired
     private PessoaUserService pessoaUserService;
@@ -56,24 +57,7 @@ class TestePessoaUsuario {
     private ServiceSendEmail serviceSendEmail;
 
     @Test
-    void testCadPessoaFisica() {
-        PessoaJuridica pessoaJuridica = new PessoaJuridica();
-        pessoaJuridica.setNome("João");
-        pessoaJuridica.setCnpj("123456412378910");
-        pessoaJuridica.setInscEstadual("12345678910");
-        pessoaJuridica.setNomeFantasia("João");
-        pessoaJuridica.setInscMunicipal("12345678910");
-        pessoaJuridica.setRazaoSocial("João");
-        pessoaJuridica.setEmail("yurira15252323moscosta@hotmail.com");
-        pessoaJuridica.setTelefone("1231233523445678910");
-        pessoaJuridica.setEmpresa(pessoaJuridica);
-
-        pessoaRepository.save(pessoaJuridica);
-
-    }
-
-    @Test
-    void testCadPessoaJuridica() {
+    void testCadPessoaJuridica() throws ExceptionECommerce {
         // Cria um acesso existente
         PessoaJuridica pj = new PessoaJuridica();
         pj.setNome("testete123ste");
@@ -118,6 +102,47 @@ class TestePessoaUsuario {
     }
 
     @Test
+    void testCadPessoaFisica() throws ExceptionECommerce {
+        // Cria um acesso existente
+        PessoaFisica pf = new PessoaFisica();
+        pf.setNome("testete123ste");
+        pf.setCpf("46877573080");
+        pf.setTipoPessoal("FISICA");
+        pf.setEmail("teste112323tes1233t12e@hotmail.com");
+        pf.setTelefone("test1212331233eteste12");
+
+        Endereco endereco1 = new Endereco();
+        endereco1.setCep("12345678910");
+        endereco1.setCidade("testete123ste");
+        endereco1.setBairro("testete123ste");
+        endereco1.setUf("testete123ste");
+        endereco1.setEmpresa(pf);
+        endereco1.setPessoa(pf);
+        endereco1.setTipoEndereco(TipoEndereco.COBRANCA);
+        endereco1.setNumero("123");
+        endereco1.setRua("testete123ste");
+
+        Endereco endereco2 = new Endereco();
+        endereco2.setCep("12345678910");
+        endereco2.setCidade("testete123ste");
+        endereco2.setBairro("testete123ste");
+        endereco2.setUf("testete123ste");
+        endereco2.setEmpresa(pf);
+        endereco2.setPessoa(pf);
+        endereco2.setTipoEndereco(TipoEndereco.ENTREGA);
+        endereco2.setNumero("123");
+        endereco2.setRua("testete123ste");
+
+        pf.getEnderecos().add(endereco1);
+        pf.getEnderecos().add(endereco2);
+
+        pf = pessoaController.salvarPF(pf).getBody();
+
+        Assertions.assertEquals(true, pf.getId() > 0);
+
+    }
+
+    @Test
     void salvarPJDeveRetornarBadRequestSeAcessoExistente() {
         // Cria um acesso existente
         PessoaJuridica pjExistente = new PessoaJuridica();
@@ -130,7 +155,7 @@ class TestePessoaUsuario {
         pjExistente.setEmail("123@hotmail.com");
         pjExistente.setTelefone("123");
         pjExistente.setEmpresa(pjExistente);
-        pessoaRepository.save(pjExistente);
+        pessoaJuridicaRepository.save(pjExistente);
 
         // Cria um novo acesso com a mesma descrição
         PessoaJuridica novoPJ = new PessoaJuridica();

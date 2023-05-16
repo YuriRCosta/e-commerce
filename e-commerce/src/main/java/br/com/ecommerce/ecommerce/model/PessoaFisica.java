@@ -1,15 +1,16 @@
 package br.com.ecommerce.ecommerce.model;
 
 import jakarta.persistence.*;
+import org.hibernate.validator.constraints.br.CPF;
 
 import java.util.Date;
-import java.util.Objects;
 
 @Entity
 @Table(name = "pessoa_fisica")
 @PrimaryKeyJoinColumn(name = "id")
 public class PessoaFisica extends Pessoa {
 
+    @CPF(message = "CPF inválido")
     @Column(nullable = false)
     private String cpf;
 
