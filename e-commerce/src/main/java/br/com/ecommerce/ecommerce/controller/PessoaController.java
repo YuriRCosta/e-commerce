@@ -3,6 +3,8 @@ package br.com.ecommerce.ecommerce.controller;
 import br.com.ecommerce.ecommerce.ExceptionECommerce;
 import br.com.ecommerce.ecommerce.model.PessoaFisica;
 import br.com.ecommerce.ecommerce.model.PessoaJuridica;
+import br.com.ecommerce.ecommerce.model.dto.CepDTO;
+import br.com.ecommerce.ecommerce.repository.EnderecoRepository;
 import br.com.ecommerce.ecommerce.repository.PessoaFisicaRepository;
 import br.com.ecommerce.ecommerce.repository.PessoaJuridicaRepository;
 import br.com.ecommerce.ecommerce.service.PessoaUserService;
@@ -11,9 +13,7 @@ import br.com.ecommerce.ecommerce.util.ValidaCPF;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
 
@@ -27,7 +27,16 @@ public class PessoaController {
     private PessoaJuridicaRepository pessoaJuridicaRepository;
 
     @Autowired
+    private EnderecoRepository enderecoRepository;
+
+    @Autowired
     private PessoaFisicaRepository pessoaFisicaRepository;
+
+    @GetMapping("/consultaCep/{cep}")
+    public ResponseEntity<CepDTO> consultaCep(@PathVariable String cep) {
+        CepDTO cepDTO = pessoaUserService.consultaCep(cep);
+        return ResponseEntity.ok(cepDTO);
+    }
 
     @PostMapping("/salvarPJ")
     public ResponseEntity<PessoaJuridica> salvarPJ(@RequestBody PessoaJuridica pessoaJuridica) throws ExceptionECommerce {
@@ -41,6 +50,8 @@ public class PessoaController {
         if (!ValidaCNPJ.isCNPJ(pessoaJuridica.getCnpj())) {
             throw new ExceptionECommerce("CNPJ "+pessoaJuridica.getCnpj()+" invalido.");
         }
+        pessoaUserService.enderecoApiPJ(pessoaJuridica);
+
         PessoaJuridica acessoSalvo = pessoaUserService.salvarPessoaJuridica(pessoaJuridica);
         return ResponseEntity.ok(acessoSalvo);
     }
@@ -57,6 +68,7 @@ public class PessoaController {
         if (!ValidaCPF.isCPF(pessoaFisica.getCpf())) {
             throw new ExceptionECommerce("CPF "+pessoaFisica.getCpf()+" invalido.");
         }
+        pessoaUserService.enderecoApiPF(pessoaFisica);
         PessoaFisica acessoSalvo = pessoaUserService.salvarPessoaFisica(pessoaFisica);
         return ResponseEntity.ok(acessoSalvo);
     }

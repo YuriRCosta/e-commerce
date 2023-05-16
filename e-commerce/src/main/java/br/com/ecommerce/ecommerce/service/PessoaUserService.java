@@ -1,8 +1,11 @@
 package br.com.ecommerce.ecommerce.service;
 
+import br.com.ecommerce.ecommerce.model.Endereco;
 import br.com.ecommerce.ecommerce.model.PessoaFisica;
 import br.com.ecommerce.ecommerce.model.PessoaJuridica;
 import br.com.ecommerce.ecommerce.model.Usuario;
+import br.com.ecommerce.ecommerce.model.dto.CepDTO;
+import br.com.ecommerce.ecommerce.repository.EnderecoRepository;
 import br.com.ecommerce.ecommerce.repository.PessoaFisicaRepository;
 import br.com.ecommerce.ecommerce.repository.PessoaJuridicaRepository;
 import br.com.ecommerce.ecommerce.repository.UsuarioRepository;
@@ -10,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.Calendar;
 
@@ -24,6 +28,9 @@ public class PessoaUserService {
 
     @Autowired
     private ServiceSendEmail serviceSendEmail;
+
+    @Autowired
+    private EnderecoRepository enderecoRepository;
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
@@ -145,4 +152,53 @@ public class PessoaUserService {
         }
     }
 
+    public CepDTO consultaCep(String cep) {
+        return new RestTemplate().getForEntity("https://viacep.com.br/ws/" + cep + "/json/", CepDTO.class).getBody();
+    }
+
+    public void enderecoApiPJ(PessoaJuridica pessoaJuridica) {
+        if (pessoaJuridica.getId() == null || pessoaJuridica.getId() <= 0) {
+            for (int i = 0; i < pessoaJuridica.getEnderecos().size(); i++) {
+                CepDTO cepDTO = consultaCep(pessoaJuridica.getEnderecos().get(i).getCep());
+
+                pessoaJuridica.getEnderecos().get(i).setCidade(cepDTO.getLocalidade());
+                pessoaJuridica.getEnderecos().get(i).setUf(cepDTO.getUf());
+            }
+        } else {
+            for (int i = 0; i < pessoaJuridica.getEnderecos().size(); i++) {
+                Endereco enderecoTemporario = enderecoRepository.findById(pessoaJuridica.getEnderecos().get(i).getId()).get();
+
+                if (!enderecoTemporario.getCep().equals(pessoaJuridica.getEnderecos().get(i).getCep())) {
+                    CepDTO cepDTO = consultaCep(pessoaJuridica.getEnderecos().get(i).getCep());
+
+                    pessoaJuridica.getEnderecos().get(i).setCidade(cepDTO.getLocalidade());
+                    pessoaJuridica.getEnderecos().get(i).setUf(cepDTO.getUf());
+
+                }
+            }
+        }
+    }
+
+    public void enderecoApiPF(PessoaFisica pessoaFisica) {
+        if (pessoaFisica.getId() == null || pessoaFisica.getId() <= 0) {
+            for (int i = 0; i < pessoaFisica.getEnderecos().size(); i++) {
+                CepDTO cepDTO = consultaCep(pessoaFisica.getEnderecos().get(i).getCep());
+
+                pessoaFisica.getEnderecos().get(i).setCidade(cepDTO.getLocalidade());
+                pessoaFisica.getEnderecos().get(i).setUf(cepDTO.getUf());
+            }
+        } else {
+            for (int i = 0; i < pessoaFisica.getEnderecos().size(); i++) {
+                Endereco enderecoTemporario = enderecoRepository.findById(pessoaFisica.getEnderecos().get(i).getId()).get();
+
+                if (!enderecoTemporario.getCep().equals(pessoaFisica.getEnderecos().get(i).getCep())) {
+                    CepDTO cepDTO = consultaCep(pessoaFisica.getEnderecos().get(i).getCep());
+
+                    pessoaFisica.getEnderecos().get(i).setCidade(cepDTO.getLocalidade());
+                    pessoaFisica.getEnderecos().get(i).setUf(cepDTO.getUf());
+
+                }
+            }
+        }
+    }
 }
