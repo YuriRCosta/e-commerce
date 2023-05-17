@@ -1,8 +1,11 @@
 package br.com.ecommerce.ecommerce;
 
 import br.com.ecommerce.ecommerce.model.dto.ObjetoErro;
+import br.com.ecommerce.ecommerce.service.ServiceSendEmail;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.hibernate.exception.ConstraintViolationException;
 import org.postgresql.util.PSQLException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -16,11 +19,16 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
+import javax.mail.MessagingException;
+import java.io.UnsupportedEncodingException;
 import java.sql.SQLException;
 import java.util.List;
 
 @RestControllerAdvice
 public class ControleExcecoes extends ResponseEntityExceptionHandler {
+
+    @Autowired
+    private ServiceSendEmail serviceSendEmail;
 
     private final String SETA = " --> ";
 
@@ -53,30 +61,13 @@ public class ControleExcecoes extends ResponseEntityExceptionHandler {
         objetoErro.setError(sb.toString());
         objetoErro.setCode(statusCode != null ? statusCode.value() + SETA + statusCode.toString(): HttpStatus.INTERNAL_SERVER_ERROR.value() + SETA + HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase());
         ex.printStackTrace();
-
-        return new ResponseEntity<>(objetoErro, statusCode != null ? statusCode : HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-
-
-    protected ResponseEntity<Object> handleExceptionInternal(Exception ex, Object body, HttpHeaders headers,
-                                           HttpStatus statusCode, WebRequest request) {
-        ObjetoErro objetoErro = new ObjetoErro();
-        StringBuilder sb = new StringBuilder();
-
-        if(ex instanceof MethodArgumentNotValidException) {
-            List<ObjectError> list = ((MethodArgumentNotValidException) ex).getBindingResult().getAllErrors();
-            for (ObjectError objectError : list) {
-                sb.append(objectError.getDefaultMessage()).append("/n");
-            }
-        } else if (ex instanceof HttpMessageNotReadableException) {
-            sb.append("JSON mal formatado");
-        } else {
-            sb.append(ex.getMessage());
+        try {
+            serviceSendEmail.enviarEmailHtml("Erro na loja virtual", ExceptionUtils.getStackTrace(ex), "n0xfps1@gmail.com");
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(e);
+        } catch (MessagingException e) {
+            throw new RuntimeException(e);
         }
-
-        objetoErro.setError(sb.toString());
-        objetoErro.setCode(statusCode != null ? statusCode.value() + SETA + statusCode.getReasonPhrase() : HttpStatus.INTERNAL_SERVER_ERROR.value() + SETA + HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase());
-        ex.printStackTrace();
 
         return new ResponseEntity<>(objetoErro, statusCode != null ? statusCode : HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -93,6 +84,15 @@ public class ControleExcecoes extends ResponseEntityExceptionHandler {
         ObjetoErro objetoErro = new ObjetoErro();
         objetoErro.setError(errorMessage);
         objetoErro.setCode(HttpStatus.INTERNAL_SERVER_ERROR + SETA + HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase());
+
+        try {
+            serviceSendEmail.enviarEmailHtml("Erro na loja virtual", ExceptionUtils.getStackTrace(ex), "n0xfps1@gmail.com");
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(e);
+        } catch (MessagingException e) {
+            throw new RuntimeException(e);
+        }
+
         return new ResponseEntity<>(objetoErro, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 

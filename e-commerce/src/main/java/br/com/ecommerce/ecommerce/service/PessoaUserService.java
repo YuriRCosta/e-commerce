@@ -5,6 +5,7 @@ import br.com.ecommerce.ecommerce.model.PessoaFisica;
 import br.com.ecommerce.ecommerce.model.PessoaJuridica;
 import br.com.ecommerce.ecommerce.model.Usuario;
 import br.com.ecommerce.ecommerce.model.dto.CepDTO;
+import br.com.ecommerce.ecommerce.model.dto.ConsultaCNPJDTO;
 import br.com.ecommerce.ecommerce.repository.EnderecoRepository;
 import br.com.ecommerce.ecommerce.repository.PessoaFisicaRepository;
 import br.com.ecommerce.ecommerce.repository.PessoaJuridicaRepository;
@@ -154,6 +155,10 @@ public class PessoaUserService {
 
     public CepDTO consultaCep(String cep) {
         return new RestTemplate().getForEntity("https://viacep.com.br/ws/" + cep + "/json/", CepDTO.class).getBody();
+    }
+
+    public ConsultaCNPJDTO consultaCnpjWS(String cnpj) {
+        return new RestTemplate().getForEntity("https://receitaws.com.br/v1/cnpj/" + cnpj, ConsultaCNPJDTO.class).getBody();
     }
 
     public void enderecoApiPJ(PessoaJuridica pessoaJuridica) {
