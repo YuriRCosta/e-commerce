@@ -3,6 +3,7 @@ package br.com.ecommerce.ecommerce.controller;
 import br.com.ecommerce.ecommerce.ExceptionECommerce;
 import br.com.ecommerce.ecommerce.model.ContaPagar;
 import br.com.ecommerce.ecommerce.repository.ContaPagarRepository;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,7 +17,7 @@ public class ContaPagarController {
     private ContaPagarRepository contaPagarRepository;
 
     @PostMapping("/salvarContaPagar")
-    public ResponseEntity<ContaPagar> salvarContaPagar(@RequestBody ContaPagar contaPagar) throws ExceptionECommerce {
+    public ResponseEntity<ContaPagar> salvarContaPagar(@RequestBody @Valid ContaPagar contaPagar) throws ExceptionECommerce {
         if (contaPagar.getEmpresa() == null || contaPagar.getEmpresa().getId() <= 0) {
             throw new ExceptionECommerce("Empresa não informada.");
         }

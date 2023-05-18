@@ -42,7 +42,7 @@ public class PessoaController {
     }
 
     @PostMapping("/salvarPJ")
-    public ResponseEntity<PessoaJuridica> salvarPJ(@RequestBody PessoaJuridica pessoaJuridica) throws ExceptionECommerce {
+    public ResponseEntity<PessoaJuridica> salvarPJ(@RequestBody @Valid PessoaJuridica pessoaJuridica) throws ExceptionECommerce {
         if (pessoaJuridica.getCnpj() == null) {
             throw new ExceptionECommerce("CNPJ não pode ser nulo.");
         }

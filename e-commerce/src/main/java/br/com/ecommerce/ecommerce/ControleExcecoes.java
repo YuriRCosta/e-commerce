@@ -12,7 +12,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
-import org.springframework.transaction.TransactionSystemException;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -73,19 +72,13 @@ public class ControleExcecoes extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(objetoErro, statusCode != null ? statusCode : HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    @ExceptionHandler({DataIntegrityViolationException.class, TransactionSystemException.class, ConstraintViolationException.class, PSQLException.class, SQLException.class})
+    @ExceptionHandler({DataIntegrityViolationException.class, ConstraintViolationException.class, PSQLException.class, SQLException.class})
     protected ResponseEntity<Object> handleExceptionDataIntegry(Exception ex) {
         String errorMessage = "";
         ObjetoErro objetoErro = new ObjetoErro();
 
-        if (ex instanceof DataIntegrityViolationException || ex instanceof PSQLException || ex instanceof SQLException) {
+        if (ex instanceof DataIntegrityViolationException || ex instanceof PSQLException || ex instanceof SQLException || ex instanceof ConstraintViolationException) {
             errorMessage = ex.getCause().getCause().getCause().getMessage();
-        } else if (ex instanceof TransactionSystemException) {
-            if (ex.getCause().getCause() instanceof ConstraintViolationException) {
-                errorMessage = ((ConstraintViolationException) ex.getCause().getCause()).getConstraintViolations().iterator().next().getMessageTemplate();
-            } else {
-                errorMessage = ex.getCause().getCause().getMessage();
-            }
         } else {
             errorMessage = ex.getMessage();
         }

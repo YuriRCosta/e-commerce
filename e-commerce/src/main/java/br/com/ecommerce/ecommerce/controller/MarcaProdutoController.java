@@ -3,6 +3,7 @@ package br.com.ecommerce.ecommerce.controller;
 import br.com.ecommerce.ecommerce.ExceptionECommerce;
 import br.com.ecommerce.ecommerce.model.MarcaProduto;
 import br.com.ecommerce.ecommerce.repository.MarcaProdutoRepository;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,7 +15,7 @@ public class MarcaProdutoController {
     private MarcaProdutoRepository marcaProdutoRepository;
 
     @PostMapping("/salvarMarcaProduto")
-    public ResponseEntity<MarcaProduto> salvarMarcaProduto(@RequestBody MarcaProduto marcaProduto) throws ExceptionECommerce {
+    public ResponseEntity<MarcaProduto> salvarMarcaProduto(@RequestBody @Valid MarcaProduto marcaProduto) throws ExceptionECommerce {
         if (marcaProdutoRepository.existsByNome(marcaProduto.getNomeDesc().toUpperCase())) {
             throw new ExceptionECommerce("Produto "+marcaProduto.getNomeDesc()+" ja cadastrado.");
         }

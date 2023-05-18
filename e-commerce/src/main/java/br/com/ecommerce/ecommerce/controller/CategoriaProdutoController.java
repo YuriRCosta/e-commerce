@@ -4,6 +4,7 @@ import br.com.ecommerce.ecommerce.ExceptionECommerce;
 import br.com.ecommerce.ecommerce.model.CategoriaProduto;
 import br.com.ecommerce.ecommerce.model.dto.CategoriaProdutoDTO;
 import br.com.ecommerce.ecommerce.repository.CategoriaProdutoRepository;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,7 +18,7 @@ public class CategoriaProdutoController {
     private CategoriaProdutoRepository categoriaProdutoRepository;
 
     @PostMapping("/salvarCategoriaProduto")
-    public ResponseEntity<CategoriaProdutoDTO> salvarCategoriaProduto(@RequestBody CategoriaProduto categoriaProduto) throws Exception {
+    public ResponseEntity<CategoriaProdutoDTO> salvarCategoriaProduto(@RequestBody @Valid CategoriaProduto categoriaProduto) throws Exception {
         if (categoriaProduto.getNomeDesc() == null || categoriaProduto.getEmpresa().getId() == null) {
             throw new ExceptionECommerce("Nome da categoria e ID da empresa não podem ser nulos.");
         }

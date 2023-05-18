@@ -1,6 +1,8 @@
 package br.com.ecommerce.ecommerce.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -16,34 +18,44 @@ public class NotaFiscalCompra implements Serializable {
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_nota_fiscal_compra")
     private Long id;
 
+    @NotBlank(message = "Informe o numero da nota.")
+    @NotNull(message = "Informe o numero da nota.")
     @Column(nullable = false)
     private String numeroNota;
 
+    @NotNull(message = "Informe a serie da nota.")
+    @NotBlank(message = "Informe a serie da nota.")
     @Column(nullable = false)
     private String serieNota;
 
     private String descricaoObs;
 
+    @NotNull(message = "Informe o valor total.")
     @Column(nullable = false)
     private BigDecimal valorTotal;
 
     private BigDecimal valorDesconto;
 
+    @NotNull(message = "Informe o valor do ICMS.")
     @Column(nullable = false)
     private BigDecimal valorIcms;
 
+    @NotNull(message = "Informe a data da compra.")
     @Column(nullable = false)
     @Temporal(TemporalType.DATE)
     private Date dataCompra;
 
+    @NotNull(message = "Informe a pessoa.")
     @ManyToOne(targetEntity = Pessoa.class)
     @JoinColumn(name = "pessoa_id", nullable = false, foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, name = "pessoa_fk"))
-    private Pessoa pessoa;
+    private PessoaJuridica pessoa;
 
+    @NotNull(message = "Informe a empresa.")
     @ManyToOne(targetEntity = Pessoa.class)
     @JoinColumn(name = "empresa_id", nullable = false, foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, name = "empresa_fk"))
-    private Pessoa empresa;
+    private PessoaJuridica empresa;
 
+    @NotNull(message = "Informe a conta a pagar.")
     @ManyToOne
     @JoinColumn(name = "conta_pagar_id", nullable = false, foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, name = "conta_pagar_fk"))
     private ContaPagar contaPagar;
@@ -61,11 +73,11 @@ public class NotaFiscalCompra implements Serializable {
         return Objects.hash(id);
     }
 
-    public Pessoa getEmpresa() {
+    public PessoaJuridica getEmpresa() {
         return empresa;
     }
 
-    public void setEmpresa(Pessoa empresa) {
+    public void setEmpresa(PessoaJuridica empresa) {
         this.empresa = empresa;
     }
 
@@ -133,11 +145,11 @@ public class NotaFiscalCompra implements Serializable {
         this.dataCompra = dataCompra;
     }
 
-    public Pessoa getPessoa() {
+    public PessoaJuridica getPessoa() {
         return pessoa;
     }
 
-    public void setPessoa(Pessoa pessoa) {
+    public void setPessoa(PessoaJuridica pessoa) {
         this.pessoa = pessoa;
     }
 
