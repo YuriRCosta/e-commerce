@@ -35,6 +35,11 @@ public class CategoriaProdutoController {
 
     @DeleteMapping("/deletarCategoriaProduto/{id}")
     public ResponseEntity<String> deletarCategoriaProduto(@PathVariable Long id) {
+        try {
+            CategoriaProduto categoriaProduto = categoriaProdutoRepository.findById(id).get();
+        } catch (Exception e) {
+            return ResponseEntity.ok("Categoria não encontrada.");
+        }
         categoriaProdutoRepository.deleteById(id);
         return ResponseEntity.ok("Categoria deletada com sucesso.");
     }
@@ -47,6 +52,9 @@ public class CategoriaProdutoController {
 
     @GetMapping("/listarCategoriaProduto/{id}")
     public ResponseEntity<CategoriaProduto> listarCategoriaProduto(@PathVariable Long id) {
+        if (!categoriaProdutoRepository.existsById(id)) {
+            return ResponseEntity.notFound().build();
+        }
         CategoriaProduto categoriaProduto = categoriaProdutoRepository.findById(id).get();
         return ResponseEntity.ok(categoriaProduto);
     }

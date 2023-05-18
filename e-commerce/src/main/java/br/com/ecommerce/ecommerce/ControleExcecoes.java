@@ -2,8 +2,8 @@ package br.com.ecommerce.ecommerce;
 
 import br.com.ecommerce.ecommerce.model.dto.ObjetoErro;
 import br.com.ecommerce.ecommerce.service.ServiceSendEmail;
+import jakarta.validation.ConstraintViolationException;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.hibernate.exception.ConstraintViolationException;
 import org.postgresql.util.PSQLException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.transaction.TransactionSystemException;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -72,18 +73,26 @@ public class ControleExcecoes extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(objetoErro, statusCode != null ? statusCode : HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    @ExceptionHandler({DataIntegrityViolationException.class, ConstraintViolationException.class, PSQLException.class, SQLException.class})
+    @ExceptionHandler({DataIntegrityViolationException.class, TransactionSystemException.class, ConstraintViolationException.class, PSQLException.class, SQLException.class})
     protected ResponseEntity<Object> handleExceptionDataIntegry(Exception ex) {
-        String errorMessage = ex.getMessage();
-
-        if (ex instanceof DataIntegrityViolationException || ex instanceof ConstraintViolationException ||
-                ex instanceof PSQLException || ex instanceof SQLException) {
-            errorMessage = ex.getCause().getCause().getMessage();
-        }
-
+        String errorMessage = "";
         ObjetoErro objetoErro = new ObjetoErro();
+
+        if (ex instanceof DataIntegrityViolationException || ex instanceof PSQLException || ex instanceof SQLException) {
+            errorMessage = ex.getCause().getCause().getCause().getMessage();
+        } else if (ex instanceof TransactionSystemException) {
+            if (ex.getCause().getCause() instanceof ConstraintViolationException) {
+                errorMessage = ((ConstraintViolationException) ex.getCause().getCause()).getConstraintViolations().iterator().next().getMessageTemplate();
+            } else {
+                errorMessage = ex.getCause().getCause().getMessage();
+            }
+        } else {
+            errorMessage = ex.getMessage();
+        }
+        ex.printStackTrace();
+
         objetoErro.setError(errorMessage);
-        objetoErro.setCode(HttpStatus.INTERNAL_SERVER_ERROR + SETA + HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase());
+        objetoErro.setCode(HttpStatus.INTERNAL_SERVER_ERROR.toString());
 
         try {
             serviceSendEmail.enviarEmailHtml("Erro na loja virtual", ExceptionUtils.getStackTrace(ex), "n0xfps1@gmail.com");

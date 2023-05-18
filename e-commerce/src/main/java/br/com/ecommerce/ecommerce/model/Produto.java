@@ -1,6 +1,8 @@
 package br.com.ecommerce.ecommerce.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -15,36 +17,63 @@ public class Produto implements Serializable {
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_produto")
     private Long id;
 
+    @NotNull(message = "O tipo de unidade não pode ser nulo.")
+    @NotBlank(message = "O tipo de unidade é obrigatório.")
     @Column(nullable = false)
     private String tipoUnidade;
 
+    @NotNull(message = "O nome do produto não pode ser nulo.")
+    @NotBlank(message = "O nome do produto é obrigatório.")
     @Column(nullable = false)
     private String nome;
 
+    @NotNull(message = "A descrição do produto não pode ser nula.")
+    @NotBlank(message = "A descrição do produto é obrigatória.")
     @Column(nullable = false, columnDefinition = "text", length = 2000)
     private String descricao;
 
+    @NotNull(message = "O peso do produto não pode ser nulo.")
     @Column(nullable = false)
     private Double peso;
 
     @ManyToOne(targetEntity = Pessoa.class)
     @JoinColumn(name = "empresa_id", nullable = false, foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, name = "empresa_fk"))
-    private Pessoa empresa;
+    private PessoaJuridica empresa;
 
+    @NotNull(message = "A largura do produto não pode ser nula.")
     @Column(nullable = false)
     private Double largura;
 
+    @NotNull(message = "A altura do produto não pode ser nula.")
     @Column(nullable = false)
     private Double altura;
 
+    @NotNull(message = "A profundidade do produto não pode ser nula.")
     @Column(nullable = false)
     private Double profundidade;
 
+    @NotNull(message = "O valor de custo do produto não pode ser nulo.")
     @Column(nullable = false)
     private BigDecimal valorVenda = BigDecimal.ZERO;
 
+    @NotNull(message = "A quantidade de estoque do produto não pode ser nulo.")
     @Column(nullable = false)
     private Integer qtdEstoque = 0;
+
+    @NotNull(message = "A categoria do produto não pode ser nulo.")
+    @ManyToOne(targetEntity = CategoriaProduto.class)
+    @JoinColumn(name = "categoria_produto_id", nullable = false, foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, name = "categoria_produto_fk"))
+    private CategoriaProduto categoriaProduto;
+
+    @NotNull(message = "A marca do produto não pode ser nulo.")
+    @ManyToOne(targetEntity = MarcaProduto.class)
+    @JoinColumn(name = "marca_produto_id", nullable = false, foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, name = "marca_produto_fk"))
+    private MarcaProduto marcaProduto = new MarcaProduto();
+
+    @NotNull(message = "A nota do produto não pode ser nulo.")
+    @ManyToOne(targetEntity = NotaItemProduto.class)
+    @JoinColumn(name = "nota_item_produto_id", nullable = false, foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, name = "nota_item_produto_fk"))
+    private NotaItemProduto notaItemProduto = new NotaItemProduto();
 
     private Integer qtdAlertaEstoque = 0;
 
@@ -54,8 +83,10 @@ public class Produto implements Serializable {
 
     private Integer qtdClique = 0;
 
+    @NotNull(message = "O produto deve estar ativo ou inativo.")
     @Column(nullable = false)
     private Boolean ativo = Boolean.TRUE;
+
 
     @Override
     public boolean equals(Object o) {
@@ -70,11 +101,35 @@ public class Produto implements Serializable {
         return Objects.hash(id);
     }
 
-    public Pessoa getEmpresa() {
+    public NotaItemProduto getNotaItemProduto() {
+        return notaItemProduto;
+    }
+
+    public void setNotaItemProduto(NotaItemProduto notaItemProduto) {
+        this.notaItemProduto = notaItemProduto;
+    }
+
+    public MarcaProduto getMarcaProduto() {
+        return marcaProduto;
+    }
+
+    public void setMarcaProduto(MarcaProduto marcaProduto) {
+        this.marcaProduto = marcaProduto;
+    }
+
+    public CategoriaProduto getCategoriaProduto() {
+        return categoriaProduto;
+    }
+
+    public void setCategoriaProduto(CategoriaProduto categoriaProduto) {
+        this.categoriaProduto = categoriaProduto;
+    }
+
+    public PessoaJuridica getEmpresa() {
         return empresa;
     }
 
-    public void setEmpresa(Pessoa empresa) {
+    public void setEmpresa(PessoaJuridica empresa) {
         this.empresa = empresa;
     }
 

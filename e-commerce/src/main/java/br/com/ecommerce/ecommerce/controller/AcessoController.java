@@ -30,7 +30,12 @@ public class AcessoController {
     }
 
     @DeleteMapping("/excluirAcesso/{id}")
-    public ResponseEntity<Void> excluirAcesso(@PathVariable Long id) {
+    public ResponseEntity<String> excluirAcesso(@PathVariable Long id) {
+        try {
+            Acesso acesso = acessoRepository.findById(id).get();
+        } catch (Exception e) {
+            return ResponseEntity.ok("Produto não encontrada.");
+        }
         acessoRepository.deleteById(id);
         return ResponseEntity.noContent().build();
     }
