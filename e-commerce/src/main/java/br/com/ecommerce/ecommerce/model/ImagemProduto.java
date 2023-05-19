@@ -1,7 +1,8 @@
 package br.com.ecommerce.ecommerce.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 
 import java.io.Serializable;
 import java.util.Objects;
@@ -15,18 +16,21 @@ public class ImagemProduto implements Serializable{
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_imagem_produto")
     private Long id;
 
-    @JsonIgnore
+    @NotNull(message = "A empresa não pode ser nula.")
     @ManyToOne(targetEntity = Pessoa.class)
     @JoinColumn(name = "empresa_id", nullable = false, foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, name = "empresa_fk"))
     private PessoaJuridica empresa;
 
+    @NotNull(message = "A imagem original não pode ser nula.")
     @Column(columnDefinition = "text", nullable = false)
     private String imagemOriginal;
 
+    @NotNull(message = "A imagem miniatura não pode ser nula.")
     @Column(columnDefinition = "text", nullable = false)
     private String imagemMiniatura;
 
-    @JsonIgnore
+    @NotNull(message = "O produto não pode ser nulo.")
+    @JsonIgnoreProperties(allowGetters = true)
     @ManyToOne
     @JoinColumn(name = "produto_id", nullable = false, foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, name = "produto_fk"))
     private Produto produto;
