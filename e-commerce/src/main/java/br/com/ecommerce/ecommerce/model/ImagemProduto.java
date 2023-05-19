@@ -1,5 +1,6 @@
 package br.com.ecommerce.ecommerce.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 import java.io.Serializable;
@@ -14,9 +15,10 @@ public class ImagemProduto implements Serializable{
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_imagem_produto")
     private Long id;
 
+    @JsonIgnore
     @ManyToOne(targetEntity = Pessoa.class)
     @JoinColumn(name = "empresa_id", nullable = false, foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, name = "empresa_fk"))
-    private Pessoa empresa;
+    private PessoaJuridica empresa;
 
     @Column(columnDefinition = "text", nullable = false)
     private String imagemOriginal;
@@ -24,6 +26,7 @@ public class ImagemProduto implements Serializable{
     @Column(columnDefinition = "text", nullable = false)
     private String imagemMiniatura;
 
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "produto_id", nullable = false, foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, name = "produto_fk"))
     private Produto produto;
@@ -41,11 +44,11 @@ public class ImagemProduto implements Serializable{
         return Objects.hash(id);
     }
 
-    public Pessoa getEmpresa() {
+    public PessoaJuridica getEmpresa() {
         return empresa;
     }
 
-    public void setEmpresa(Pessoa empresa) {
+    public void setEmpresa(PessoaJuridica empresa) {
         this.empresa = empresa;
     }
 

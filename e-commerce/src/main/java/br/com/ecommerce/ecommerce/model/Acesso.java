@@ -2,6 +2,7 @@ package br.com.ecommerce.ecommerce.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.security.core.GrantedAuthority;
 
 @Entity
@@ -13,6 +14,7 @@ public class Acesso implements GrantedAuthority {
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_acesso")
     private Long id;
 
+    @NotNull(message = "Informe a descrição.")
     @Column(nullable = false, unique = true)
     private String descricao;
 

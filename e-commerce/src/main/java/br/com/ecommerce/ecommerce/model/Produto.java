@@ -6,6 +6,8 @@ import jakarta.validation.constraints.NotNull;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 @Entity
@@ -82,6 +84,8 @@ public class Produto implements Serializable {
     @Column(nullable = false)
     private Boolean ativo = Boolean.TRUE;
 
+    @OneToMany(mappedBy = "produto", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<ImagemProduto> imagemProdutos = new ArrayList<>();
 
     @Override
     public boolean equals(Object o) {
@@ -94,6 +98,14 @@ public class Produto implements Serializable {
     @Override
     public int hashCode() {
         return Objects.hash(id);
+    }
+
+    public List<ImagemProduto> getImagemProdutos() {
+        return imagemProdutos;
+    }
+
+    public void setImagemProdutos(List<ImagemProduto> imagemProdutos) {
+        this.imagemProdutos = imagemProdutos;
     }
 
     public MarcaProduto getMarcaProduto() {

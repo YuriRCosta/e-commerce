@@ -3,10 +3,15 @@ package br.com.ecommerce.ecommerce.controller;
 import br.com.ecommerce.ecommerce.ExceptionECommerce;
 import br.com.ecommerce.ecommerce.model.Produto;
 import br.com.ecommerce.ecommerce.repository.ProdutoRepository;
+import br.com.ecommerce.ecommerce.service.ProdutoService;
+import br.com.ecommerce.ecommerce.service.ServiceSendEmail;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import javax.mail.MessagingException;
+import java.io.IOException;
 
 @RestController
 public class ProdutoController {
@@ -14,21 +19,20 @@ public class ProdutoController {
     @Autowired
     private ProdutoRepository produtoRepository;
 
+    @Autowired
+    private ProdutoService produtoService;
+
+    @Autowired
+    private ServiceSendEmail serviceSendEmail;
+
     @PostMapping("/salvarProduto")
-    public ResponseEntity<Produto> salvarProduto(@RequestBody @Valid Produto produto) throws ExceptionECommerce {
-        if (produtoRepository.existsByNome(produto.getNome().toUpperCase())) {
-            throw new ExceptionECommerce("Produto "+produto.getNome()+" ja cadastrado.");
-        }
-        if (produto.getEmpresa() == null || produto.getEmpresa().getId() <= 0) {
-            throw new ExceptionECommerce("Empresa não informada.");
-        }
-        if (produto.getCategoriaProduto() == null || produto.getCategoriaProduto().getId() <= 0) {
-            throw new ExceptionECommerce("Categoria não informada.");
-        }
-        if (produto.getMarcaProduto().getId() == null || produto.getMarcaProduto().getId() <= 0) {
-            throw new ExceptionECommerce("Marca não informada.");
-        }
+    public ResponseEntity<Produto> salvarProduto(@RequestBody @Valid Produto produto) throws ExceptionECommerce, MessagingException, IOException {
+        produtoService.verificaIfs(produto);
+        produtoService.verificaImagem(produto);
+        produtoService.salvarImagem(produto);
+
         Produto produtoSalvo = produtoRepository.save(produto);
+        produtoService.alertaQtdEstoque(produtoSalvo);
         return ResponseEntity.ok(produtoSalvo);
     }
 
