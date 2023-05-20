@@ -8,9 +8,7 @@ import br.com.ecommerce.ecommerce.repository.VendaCompraLojaVirtualRepository;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 public class VendaCompraLojaVirtualController {
@@ -27,6 +25,11 @@ public class VendaCompraLojaVirtualController {
     @PostMapping("/salvarVendaCompraLojaVirtual")
     public ResponseEntity<VendaCompraLojaVirtual> salvarVendaCompraLojaVirtual(@RequestBody @Valid VendaCompraLojaVirtual vendaCompraLojaVirtual) {
 
+        for (int i = 0; i < vendaCompraLojaVirtual.getItensVendaLoja().size(); i++) {
+            vendaCompraLojaVirtual.getItensVendaLoja().get(i).setEmpresa(vendaCompraLojaVirtual.getEmpresa());
+            vendaCompraLojaVirtual.getItensVendaLoja().get(i).setVendaCompraLojaVirtual(vendaCompraLojaVirtual);
+        }
+
         NotaFiscalVenda notaFiscalVenda = notaFiscalVendaRepository.save(vendaCompraLojaVirtual.getNotaFiscalVenda());
         vendaCompraLojaVirtual.setNotaFiscalVenda(notaFiscalVenda);
         VendaCompraLojaVirtual vendaCompraLojaVirtualSalvo = vendaCompraLojaVirtualRepository.save(vendaCompraLojaVirtual);
@@ -37,6 +40,29 @@ public class VendaCompraLojaVirtualController {
         return ResponseEntity.ok(vendaCompraLojaVirtualSalvo);
     }
 
+    @GetMapping("/listarVendasComprasLojaVirtual")
+    public ResponseEntity<Iterable<VendaCompraLojaVirtual>> listarVendasComprasLojaVirtual() {
+        Iterable<VendaCompraLojaVirtual> vendasComprasLojaVirtual = vendaCompraLojaVirtualRepository.findAll();
+        return ResponseEntity.ok(vendasComprasLojaVirtual);
+    }
+
+    @GetMapping("/listarVendaCompraLojaVirtual/{id}")
+    public ResponseEntity<VendaCompraLojaVirtual> listarVendaCompraLojaVirtual(@PathVariable Long id) {
+        if (!vendaCompraLojaVirtualRepository.existsById(id)) {
+            return ResponseEntity.notFound().build();
+        }
+        VendaCompraLojaVirtual vendaCompraLojaVirtual = vendaCompraLojaVirtualRepository.findById(id).get();
+        return ResponseEntity.ok(vendaCompraLojaVirtual);
+    }
+
+    @DeleteMapping("/excluirVendaCompraLojaVirtual/{id}")
+    public ResponseEntity<String> excluirVendaCompraLojaVirtual(@PathVariable Long id) {
+        if (!vendaCompraLojaVirtualRepository.existsById(id)) {
+            return ResponseEntity.notFound().build();
+        }
+        vendaCompraLojaVirtualRepository.deleteById(id);
+        return ResponseEntity.ok("Venda/Compra excluída com sucesso.");
+    }
 
 
 }

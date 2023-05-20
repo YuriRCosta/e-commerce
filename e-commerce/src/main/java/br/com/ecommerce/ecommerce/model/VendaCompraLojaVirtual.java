@@ -7,6 +7,7 @@ import jakarta.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.List;
 import java.util.Objects;
 
 @Entity
@@ -77,6 +78,10 @@ public class VendaCompraLojaVirtual implements Serializable {
     @Temporal(TemporalType.DATE)
     private Date dataEntrega;
 
+    @NotNull(message = "O status da venda deve ser informado")
+    @OneToMany(mappedBy = "vendaCompraLojaVirtual", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ItemVendaLoja> itensVendaLoja;
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -88,6 +93,14 @@ public class VendaCompraLojaVirtual implements Serializable {
     @Override
     public int hashCode() {
         return Objects.hash(id);
+    }
+
+    public List<ItemVendaLoja> getItensVendaLoja() {
+        return itensVendaLoja;
+    }
+
+    public void setItensVendaLoja(List<ItemVendaLoja> itensVendaLoja) {
+        this.itensVendaLoja = itensVendaLoja;
     }
 
     public PessoaJuridica getEmpresa() {
