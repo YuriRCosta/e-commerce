@@ -1,6 +1,7 @@
 package br.com.ecommerce.ecommerce.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 
 import java.io.Serializable;
 import java.util.Objects;
@@ -14,19 +15,23 @@ public class AvaliacaoProduto implements Serializable {
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_avaliacao_produto")
     private Long id;
 
+    @NotNull(message = "A nota não pode ser nula.")
     @Column(nullable = false)
     private Integer nota;
 
     private String descricao;
 
+    @NotNull(message = "A empresa não pode ser nula.")
     @ManyToOne(targetEntity = Pessoa.class)
     @JoinColumn(name = "empresa_id", nullable = false, foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, name = "empresa_fk"))
-    private Pessoa empresa;
+    private PessoaJuridica empresa;
 
+    @NotNull(message = "A pessoa não pode ser nula.")
     @ManyToOne(targetEntity = Pessoa.class)
     @JoinColumn(name = "pessoa_id", nullable = false, foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, name = "pessoa_fk"))
-    private Pessoa pessoa;
+    private PessoaJuridica pessoa;
 
+    @NotNull(message = "O produto não pode ser nulo.")
     @ManyToOne
     @JoinColumn(name = "produto_id", nullable = false, foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, name = "produto_fk"))
     private Produto produto;
@@ -44,11 +49,11 @@ public class AvaliacaoProduto implements Serializable {
         return Objects.hash(id);
     }
 
-    public Pessoa getEmpresa() {
+    public PessoaJuridica getEmpresa() {
         return empresa;
     }
 
-    public void setEmpresa(Pessoa empresa) {
+    public void setEmpresa(PessoaJuridica empresa) {
         this.empresa = empresa;
     }
 
@@ -76,11 +81,11 @@ public class AvaliacaoProduto implements Serializable {
         this.nota = nota;
     }
 
-    public Pessoa getPessoa() {
+    public PessoaJuridica getPessoa() {
         return pessoa;
     }
 
-    public void setPessoa(Pessoa pessoa) {
+    public void setPessoa(PessoaJuridica pessoa) {
         this.pessoa = pessoa;
     }
 

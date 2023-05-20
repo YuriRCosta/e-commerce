@@ -1,6 +1,8 @@
 package br.com.ecommerce.ecommerce.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -16,49 +18,61 @@ public class VendaCompraLojaVirtual implements Serializable {
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_venda_compra_loja_virtual")
     private Long id;
 
+    @NotNull(message = "A pessoa deve ser informada")
     @ManyToOne(targetEntity = Pessoa.class)
     @JoinColumn(name = "pessoa_id", nullable = false, foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, name = "pessoa_fk"))
-    private Pessoa pessoa;
+    private PessoaFisica pessoa;
 
+    @NotNull(message = "A empresa deve ser informada")
     @ManyToOne(targetEntity = Pessoa.class)
     @JoinColumn(name = "empresa_id", nullable = false, foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, name = "empresa_fk"))
-    private Pessoa empresa;
+    private PessoaJuridica empresa;
 
+    @NotNull(message = "A data de entrega deve ser informado")
     @ManyToOne
     @JoinColumn(name = "endereco_entrega_id", nullable = false, foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, name = "endereco_entrega_fk"))
     private Endereco enderecoEntrega;
 
+    @NotNull(message = "O endereco de cobrança deve ser informado")
     @ManyToOne
     @JoinColumn(name = "endereco_cobranca_id", nullable = false, foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, name = "endereco_cobranca_fk"))
     private Endereco enderecoCobranca;
 
+    @Min(value = 1, message = "O valor total deve ser maior que 1")
+    @NotNull(message = "O valor total deve ser informado")
     @Column(nullable = false)
     private BigDecimal valorTotal;
 
     private BigDecimal valorDesconto;
 
+    @NotNull(message = "A forma de pagamento deve ser informada")
     @ManyToOne
     @JoinColumn(name = "forma_pagamento_id", nullable = false, foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, name = "forma_pagamento_fk"))
     private FormaPagamento formaPagamento;
 
+    @NotNull(message = "A nota fiscal de venda deve ser informada")
     @OneToOne
     @JoinColumn(name = "nota_fiscal_venda_id", nullable = false, foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, name = "nota_fiscal_venda_fk"))
     private NotaFiscalVenda notaFiscalVenda;
 
     @ManyToOne
-    @JoinColumn(name = "cupom_desconto_id", nullable = false, foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, name = "cupom_desconto_id"))
+    @JoinColumn(name = "cupom_desconto_id", foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, name = "cupom_desconto_id"))
     private CupomDesconto cupomDesconto;
 
+    @NotNull(message = "O valor do frete deve ser informado")
     @Column(nullable = false)
     private BigDecimal valorFrete;
 
+    @NotNull(message = "O dia da entrega deve ser informado")
     @Column(nullable = false)
     private Integer diaEntrega;
 
+    @NotNull(message = "A data de venda deve ser informada")
     @Column(nullable = false)
     @Temporal(TemporalType.DATE)
     private Date dataVenda;
 
+    @NotNull(message = "A data de entrega deve ser informada")
     @Column(nullable = false)
     @Temporal(TemporalType.DATE)
     private Date dataEntrega;
@@ -76,11 +90,11 @@ public class VendaCompraLojaVirtual implements Serializable {
         return Objects.hash(id);
     }
 
-    public Pessoa getEmpresa() {
+    public PessoaJuridica getEmpresa() {
         return empresa;
     }
 
-    public void setEmpresa(Pessoa empresa) {
+    public void setEmpresa(PessoaJuridica empresa) {
         this.empresa = empresa;
     }
 
@@ -92,11 +106,11 @@ public class VendaCompraLojaVirtual implements Serializable {
         this.id = id;
     }
 
-    public Pessoa getPessoa() {
+    public PessoaFisica getPessoa() {
         return pessoa;
     }
 
-    public void setPessoa(Pessoa pessoa) {
+    public void setPessoa(PessoaFisica pessoa) {
         this.pessoa = pessoa;
     }
 

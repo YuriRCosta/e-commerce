@@ -3,6 +3,7 @@ package br.com.ecommerce.ecommerce.controller;
 import br.com.ecommerce.ecommerce.model.ImagemProduto;
 import br.com.ecommerce.ecommerce.model.dto.ImagemProdutoDTO;
 import br.com.ecommerce.ecommerce.repository.ImagemProdutoRepository;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,7 +18,7 @@ public class ImagemProdutoController {
     private ImagemProdutoRepository imagemProdutoRepository;
 
     @PostMapping("/salvarImagemProduto")
-    public ResponseEntity<ImagemProdutoDTO> salvarImagemProduto(@RequestBody ImagemProduto imagemProduto) {
+    public ResponseEntity<ImagemProdutoDTO> salvarImagemProduto(@RequestBody @Valid ImagemProduto imagemProduto) {
         ImagemProduto imagemProdutoSalvo = imagemProdutoRepository.save(imagemProduto);
 
         ImagemProdutoDTO imagemProdutoDTO = new ImagemProdutoDTO();

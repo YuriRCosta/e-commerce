@@ -1,5 +1,6 @@
 package br.com.ecommerce.ecommerce.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 import java.io.Serializable;
@@ -16,7 +17,7 @@ public class NotaFiscalVenda implements Serializable{
 
     @ManyToOne(targetEntity = Pessoa.class)
     @JoinColumn(name = "empresa_id", nullable = false, foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, name = "empresa_fk"))
-    private Pessoa empresa;
+    private PessoaJuridica empresa;
 
     @Column(nullable = false)
     private String numeroNota;
@@ -27,10 +28,10 @@ public class NotaFiscalVenda implements Serializable{
     @Column(nullable = false)
     private String tipo;
 
+    @JsonIgnore
     @OneToOne
-    @JoinColumn(name = "venda_compra_loja_virtual_id", nullable = false, foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, name = "venda_compra_loja_virtual_fk"))
+    @JoinColumn(name = "venda_compra_loja_virtual_id", foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, name = "venda_compra_loja_virtual_fk"))
     private VendaCompraLojaVirtual vendaCompraLojaVirtual;
-
 
     @Column(columnDefinition = "text", nullable = false)
     private String xml;
@@ -51,11 +52,11 @@ public class NotaFiscalVenda implements Serializable{
         return Objects.hash(id);
     }
 
-    public Pessoa getEmpresa() {
+    public PessoaJuridica getEmpresa() {
         return empresa;
     }
 
-    public void setEmpresa(Pessoa empresa) {
+    public void setEmpresa(PessoaJuridica empresa) {
         this.empresa = empresa;
     }
 
