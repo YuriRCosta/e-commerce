@@ -10,6 +10,18 @@ public class VendaCompraLojaVirtualService {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
+    public void exclusaoTotalBanco2(Long id) {
+        String sql = "begin; update venda_compra_loja_virtual set excluido = true where id = "+id+"; commit;";
+
+        jdbcTemplate.execute(sql);
+    }
+
+    public void ativaVenda(Long id) {
+        String sql = "begin; update venda_compra_loja_virtual set excluido = false where id = "+id+"; commit;";
+
+        jdbcTemplate.execute(sql);
+    }
+
     public void exclusaoTotalBanco(Long id) {
         String value = "begin;"
                 + "update nota_fiscal_venda set venda_compra_loja_virtual_id = null where venda_compra_loja_virtual_id = "+id+";"

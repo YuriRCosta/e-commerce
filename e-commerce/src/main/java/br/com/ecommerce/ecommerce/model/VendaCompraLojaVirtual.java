@@ -82,6 +82,8 @@ public class VendaCompraLojaVirtual implements Serializable {
     @OneToMany(mappedBy = "vendaCompraLojaVirtual", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ItemVendaLoja> itensVendaLoja;
 
+    private Boolean excluido = Boolean.FALSE;
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -93,6 +95,14 @@ public class VendaCompraLojaVirtual implements Serializable {
     @Override
     public int hashCode() {
         return Objects.hash(id);
+    }
+
+    public Boolean getExcluido() {
+        return excluido;
+    }
+
+    public void setExcluido(Boolean excluido) {
+        this.excluido = excluido;
     }
 
     public List<ItemVendaLoja> getItensVendaLoja() {

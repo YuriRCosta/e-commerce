@@ -53,6 +53,12 @@ public class VendaCompraLojaVirtualController {
         return ResponseEntity.ok(vendaCompraLojaVirtualSalvo);
     }
 
+    @GetMapping("/listarVendaPorProduto/{id}")
+    public ResponseEntity<Iterable<VendaCompraLojaVirtual>> listarVendaPorProduto(@PathVariable Long id) {
+        Iterable<VendaCompraLojaVirtual> vendasComprasLojaVirtual = vendaCompraLojaVirtualRepository.vendaPorProduto(id);
+        return ResponseEntity.ok(vendasComprasLojaVirtual);
+    }
+
     @DeleteMapping("/deleteTotalBanco/{id}")
     public ResponseEntity<String> deleteTotalBanco(@PathVariable Long id) {
         if (!vendaCompraLojaVirtualRepository.existsById(id)) {
@@ -62,18 +68,36 @@ public class VendaCompraLojaVirtualController {
         return ResponseEntity.ok("Venda/Compra excluída com sucesso.");
     }
 
+    @DeleteMapping("/deleteTotalBanco2/{id}")
+    public ResponseEntity<String> deleteTotalBanco2(@PathVariable Long id) {
+        if (!vendaCompraLojaVirtualRepository.existsById(id)) {
+            return ResponseEntity.notFound().build();
+        }
+        vendaCompraLojaVirtualService.exclusaoTotalBanco2(id);
+        return ResponseEntity.ok("Venda/Compra excluída via logica com sucesso.");
+    }
+
+    @PutMapping("/ativaRegistroVendaCompraLojaVirtual/{id}")
+    public ResponseEntity<String> ativaRegistroVendaCompraLojaVirtual(@PathVariable Long id) {
+        if (!vendaCompraLojaVirtualRepository.existsById(id)) {
+            return ResponseEntity.notFound().build();
+        }
+        vendaCompraLojaVirtualService.ativaVenda(id);
+        return ResponseEntity.ok("Venda/Compra ativada com sucesso.");
+    }
+
     @GetMapping("/listarVendasComprasLojaVirtual")
     public ResponseEntity<Iterable<VendaCompraLojaVirtual>> listarVendasComprasLojaVirtual() {
-        Iterable<VendaCompraLojaVirtual> vendasComprasLojaVirtual = vendaCompraLojaVirtualRepository.findAll();
+        Iterable<VendaCompraLojaVirtual> vendasComprasLojaVirtual = vendaCompraLojaVirtualRepository.findAllLogicamenteFalse();
         return ResponseEntity.ok(vendasComprasLojaVirtual);
     }
 
     @GetMapping("/listarVendaCompraLojaVirtual/{id}")
     public ResponseEntity<VendaCompraLojaVirtual> listarVendaCompraLojaVirtual(@PathVariable Long id) {
-        if (!vendaCompraLojaVirtualRepository.existsById(id)) {
+        if (vendaCompraLojaVirtualRepository.findByIdExclusao(id) == null) {
             return ResponseEntity.notFound().build();
         }
-        VendaCompraLojaVirtual vendaCompraLojaVirtual = vendaCompraLojaVirtualRepository.findById(id).get();
+        VendaCompraLojaVirtual vendaCompraLojaVirtual = vendaCompraLojaVirtualRepository.findByIdExclusao(id);
         return ResponseEntity.ok(vendaCompraLojaVirtual);
     }
 
