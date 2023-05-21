@@ -12,6 +12,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 public class VendaCompraLojaVirtualController {
 
@@ -27,7 +29,7 @@ public class VendaCompraLojaVirtualController {
     @Autowired
     private StatusRastreioRepository statusRastreioRepository;
 
-    @PostMapping("/ ")
+    @PostMapping("/salvarVendaCompraLojaVirtual")
     public ResponseEntity<VendaCompraLojaVirtual> salvarVendaCompraLojaVirtual(@RequestBody @Valid VendaCompraLojaVirtual vendaCompraLojaVirtual) {
 
         for (int i = 0; i < vendaCompraLojaVirtual.getItensVendaLoja().size(); i++) {
@@ -51,6 +53,33 @@ public class VendaCompraLojaVirtualController {
         notaFiscalVendaRepository.save(notaFiscalVenda);
 
         return ResponseEntity.ok(vendaCompraLojaVirtualSalvo);
+    }
+
+    @GetMapping("/listarVendaDinamica/{valor}/{tipoconsulta}")
+    public ResponseEntity<Iterable<VendaCompraLojaVirtual>> listarVendaDinamica(@PathVariable("valor") String valor, @PathVariable("tipoconsulta") String tipoconsulta) {
+
+        List<VendaCompraLojaVirtual> vendasComprasLojaVirtual = null;
+
+        if (tipoconsulta.equalsIgnoreCase("POR_ID_PROD")) {
+            vendasComprasLojaVirtual = vendaCompraLojaVirtualRepository.vendaPorProduto(Long.parseLong(valor));
+        }
+        if (tipoconsulta.equalsIgnoreCase("POR_NOME_PROD")) {
+            vendasComprasLojaVirtual = vendaCompraLojaVirtualRepository.vendaPorNomeProduto(valor.toUpperCase().trim());
+        }
+        if (tipoconsulta.equalsIgnoreCase("POR_CAT_PROD")) {
+            vendasComprasLojaVirtual = vendaCompraLojaVirtualRepository.vendaPorCategoriaProduto(valor.toUpperCase().trim());
+        }
+        if (tipoconsulta.equalsIgnoreCase("POR_NOME_CLIENTE")) {
+            vendasComprasLojaVirtual = vendaCompraLojaVirtualRepository.vendaPorNomeCliente(valor.toUpperCase().trim());
+        }
+        if (tipoconsulta.equalsIgnoreCase("POR_END_COBRANCA")) {
+            vendasComprasLojaVirtual = vendaCompraLojaVirtualRepository.vendaPorEndCobranca(valor.toUpperCase().trim());
+        }
+        if (tipoconsulta.equalsIgnoreCase("POR_END_ENTREGA")) {
+            vendasComprasLojaVirtual = vendaCompraLojaVirtualRepository.vendaPorEndEntrega(valor.toUpperCase().trim());
+        }
+
+        return ResponseEntity.ok(vendasComprasLojaVirtual);
     }
 
     @GetMapping("/listarVendaPorProduto/{id}")
