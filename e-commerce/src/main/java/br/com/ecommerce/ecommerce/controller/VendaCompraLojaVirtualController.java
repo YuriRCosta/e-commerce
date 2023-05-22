@@ -12,6 +12,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 
 @RestController
@@ -78,7 +81,19 @@ public class VendaCompraLojaVirtualController {
         if (tipoconsulta.equalsIgnoreCase("POR_END_ENTREGA")) {
             vendasComprasLojaVirtual = vendaCompraLojaVirtualRepository.vendaPorEndEntrega(valor.toUpperCase().trim());
         }
+        if (tipoconsulta.equalsIgnoreCase("POR_CPF_PESSOA")) {
+            vendasComprasLojaVirtual = vendaCompraLojaVirtualRepository.vendaPorCpfPessoa(valor.toUpperCase().trim());
+        }
 
+        return ResponseEntity.ok(vendasComprasLojaVirtual);
+    }
+
+    @GetMapping("/listarVendaPorData/{dataInicio}/{dataFim}")
+    public ResponseEntity<Iterable<VendaCompraLojaVirtual>> listarVendaPorData(@PathVariable String dataInicio, @PathVariable String dataFim) throws ParseException {
+        SimpleDateFormat formato = new SimpleDateFormat("yyyy-MM-dd");
+        Date data1 = formato.parse(dataInicio);
+        Date data2 = formato.parse(dataFim);
+        Iterable<VendaCompraLojaVirtual> vendasComprasLojaVirtual = vendaCompraLojaVirtualRepository.vendaPorData(data1, data2);
         return ResponseEntity.ok(vendasComprasLojaVirtual);
     }
 
@@ -113,6 +128,12 @@ public class VendaCompraLojaVirtualController {
         }
         vendaCompraLojaVirtualService.ativaVenda(id);
         return ResponseEntity.ok("Venda/Compra ativada com sucesso.");
+    }
+
+    @GetMapping("/listarPorIdPessoa/{id}")
+    public ResponseEntity<Iterable<VendaCompraLojaVirtual>> listarPorIdPessoa(@PathVariable Long id) {
+        Iterable<VendaCompraLojaVirtual> vendasComprasLojaVirtual = vendaCompraLojaVirtualRepository.vendaPorIdPessoa(id);
+        return ResponseEntity.ok(vendasComprasLojaVirtual);
     }
 
     @GetMapping("/listarVendasComprasLojaVirtual")

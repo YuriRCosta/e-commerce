@@ -5,9 +5,9 @@ import br.com.ecommerce.ecommerce.repository.FormaPagamentoRepository;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 public class FormaPagamentoController {
@@ -19,6 +19,18 @@ public class FormaPagamentoController {
     public ResponseEntity<FormaPagamento> salvarVendaCompraLojaVirtual(@RequestBody @Valid FormaPagamento formaPagamento) {
         FormaPagamento formaPagamentoSalvo = formaPagamentoRepository.save(formaPagamento);
         return ResponseEntity.ok(formaPagamentoSalvo);
+    }
+
+    @GetMapping("/listarFormasPagamento")
+    public ResponseEntity<List<FormaPagamento>> listarFormasPagamento() {
+        return ResponseEntity.ok(formaPagamentoRepository.findAll());
+    }
+
+    @GetMapping("/listarFormaPagamentoPorId/{codigoFormaPagamento}")
+    public ResponseEntity<FormaPagamento> listarFormaPagamentoPorId(@PathVariable Long codigoFormaPagamento) {
+        if (formaPagamentoRepository.findById(codigoFormaPagamento).isPresent())
+            return ResponseEntity.ok(formaPagamentoRepository.findById(codigoFormaPagamento).get());
+        return ResponseEntity.notFound().build();
     }
 
 }

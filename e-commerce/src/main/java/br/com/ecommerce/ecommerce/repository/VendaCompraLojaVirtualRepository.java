@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Date;
 import java.util.List;
 
 @Repository
@@ -35,4 +36,13 @@ public interface VendaCompraLojaVirtualRepository extends JpaRepository<VendaCom
 
     @Query("select distinct i.vendaCompraLojaVirtual from ItemVendaLoja i where upper(trim(i.vendaCompraLojaVirtual.enderecoEntrega.rua)) like %?1% and i.vendaCompraLojaVirtual.excluido = false")
     List<VendaCompraLojaVirtual> vendaPorEndEntrega(String trim);
+
+    @Query("select distinct i.vendaCompraLojaVirtual from ItemVendaLoja i where i.vendaCompraLojaVirtual.dataVenda between ?1 and ?2 and i.vendaCompraLojaVirtual.excluido = false")
+    Iterable<VendaCompraLojaVirtual> vendaPorData(Date dataInicio, Date dataFim);
+
+    @Query("select distinct i.vendaCompraLojaVirtual from ItemVendaLoja i where i.vendaCompraLojaVirtual.pessoa.cpf = ?1 and i.vendaCompraLojaVirtual.excluido = false")
+    List<VendaCompraLojaVirtual> vendaPorCpfPessoa(String Cpf);
+
+    @Query("select distinct i.vendaCompraLojaVirtual from ItemVendaLoja i where i.vendaCompraLojaVirtual.pessoa.id = ?1 and i.vendaCompraLojaVirtual.excluido = false")
+    List<VendaCompraLojaVirtual> vendaPorIdPessoa(Long valor);
 }
