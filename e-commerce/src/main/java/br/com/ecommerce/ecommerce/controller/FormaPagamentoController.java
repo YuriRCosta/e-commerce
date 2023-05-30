@@ -33,4 +33,9 @@ public class FormaPagamentoController {
         return ResponseEntity.notFound().build();
     }
 
+    @GetMapping("/listarFormaPagamentoPorEmpresa/{empresaId}")
+    public ResponseEntity<List<FormaPagamento>> listarFormaPagamentoPorEmpresa(@PathVariable Long empresaId) {
+        return ResponseEntity.ok(formaPagamentoRepository.findByEmpresaId(empresaId));
+    }
+
 }

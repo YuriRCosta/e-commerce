@@ -1,6 +1,7 @@
 package br.com.ecommerce.ecommerce.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -18,14 +19,16 @@ public class CupomDesconto implements Serializable {
 
     @ManyToOne(targetEntity = Pessoa.class)
     @JoinColumn(name = "empresa_id", nullable = false, foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, name = "empresa_fk"))
-    private Pessoa empresa;
+    private PessoaJuridica empresa;
 
+    @NotNull(message = "O código do desconto não pode ser nulo!")
     @Column(nullable = false)
     private String codDesc;
 
     private BigDecimal valorReal;
     private BigDecimal valorPorcent;
 
+    @NotNull(message = "A data de validade do cupom não pode ser nula!")
     @Column(nullable = false)
     @Temporal(TemporalType.DATE)
     private Date dataValidadeCupom;
@@ -43,11 +46,11 @@ public class CupomDesconto implements Serializable {
         return Objects.hash(id);
     }
 
-    public Pessoa getEmpresa() {
+    public PessoaJuridica getEmpresa() {
         return empresa;
     }
 
-    public void setEmpresa(Pessoa empresa) {
+    public void setEmpresa(PessoaJuridica empresa) {
         this.empresa = empresa;
     }
 

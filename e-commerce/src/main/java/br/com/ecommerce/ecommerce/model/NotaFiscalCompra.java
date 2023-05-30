@@ -45,6 +45,7 @@ public class NotaFiscalCompra implements Serializable {
     @Temporal(TemporalType.DATE)
     private Date dataCompra;
 
+    //Fornecedor
     @NotNull(message = "Informe a pessoa.")
     @ManyToOne(targetEntity = Pessoa.class)
     @JoinColumn(name = "pessoa_id", nullable = false, foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, name = "pessoa_fk"))

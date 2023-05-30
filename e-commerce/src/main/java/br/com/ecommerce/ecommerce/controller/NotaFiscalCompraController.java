@@ -2,7 +2,9 @@ package br.com.ecommerce.ecommerce.controller;
 
 import br.com.ecommerce.ecommerce.ExceptionECommerce;
 import br.com.ecommerce.ecommerce.model.NotaFiscalCompra;
+import br.com.ecommerce.ecommerce.model.NotaFiscalVenda;
 import br.com.ecommerce.ecommerce.repository.NotaFiscalCompraRepository;
+import br.com.ecommerce.ecommerce.repository.NotaFiscalVendaRepository;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +17,8 @@ public class NotaFiscalCompraController {
 
     @Autowired
     private NotaFiscalCompraRepository notaFiscalCompraRepository;
+    @Autowired
+    private NotaFiscalVendaRepository notaFiscalVendaRepository;
 
     @PostMapping("/salvarNotaFiscalCompra")
     public ResponseEntity<NotaFiscalCompra> salvarNotaFiscalCompra(@RequestBody @Valid NotaFiscalCompra notaFiscalCompra) throws ExceptionECommerce {
@@ -58,6 +62,15 @@ public class NotaFiscalCompraController {
             return ResponseEntity.notFound().build();
         }
         NotaFiscalCompra notaFiscalCompra = notaFiscalCompraRepository.findById(id).get();
+        return ResponseEntity.ok(notaFiscalCompra);
+    }
+
+    @GetMapping("/listarNotaFiscalPorVenda/{idVenda}")
+    public ResponseEntity<List<NotaFiscalVenda>> listarNFVendaPorVenda(@PathVariable Long idVenda) {
+        if (notaFiscalVendaRepository.findByVendaCompraLojaVirtualId(idVenda) == null) {
+            return ResponseEntity.notFound().build();
+        }
+        List<NotaFiscalVenda> notaFiscalCompra = notaFiscalVendaRepository.findByVendaCompraLojaVirtualId(idVenda);
         return ResponseEntity.ok(notaFiscalCompra);
     }
 
