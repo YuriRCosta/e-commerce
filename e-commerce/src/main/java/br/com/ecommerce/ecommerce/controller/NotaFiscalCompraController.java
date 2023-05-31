@@ -3,13 +3,16 @@ package br.com.ecommerce.ecommerce.controller;
 import br.com.ecommerce.ecommerce.ExceptionECommerce;
 import br.com.ecommerce.ecommerce.model.NotaFiscalCompra;
 import br.com.ecommerce.ecommerce.model.NotaFiscalVenda;
+import br.com.ecommerce.ecommerce.model.dto.ObjetoReqRelatorioProdutoCompraDTO;
 import br.com.ecommerce.ecommerce.repository.NotaFiscalCompraRepository;
 import br.com.ecommerce.ecommerce.repository.NotaFiscalVendaRepository;
+import br.com.ecommerce.ecommerce.service.NotaFiscalCompraService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -19,6 +22,8 @@ public class NotaFiscalCompraController {
     private NotaFiscalCompraRepository notaFiscalCompraRepository;
     @Autowired
     private NotaFiscalVendaRepository notaFiscalVendaRepository;
+    @Autowired
+    private NotaFiscalCompraService notaFiscalCompraService;
 
     @PostMapping("/salvarNotaFiscalCompra")
     public ResponseEntity<NotaFiscalCompra> salvarNotaFiscalCompra(@RequestBody @Valid NotaFiscalCompra notaFiscalCompra) throws ExceptionECommerce {
@@ -78,5 +83,14 @@ public class NotaFiscalCompraController {
     public ResponseEntity<Iterable<NotaFiscalCompra>> listarNotaFiscalCompraPorDesc(@PathVariable String desc) {
         Iterable<NotaFiscalCompra> notaFiscalCompras = notaFiscalCompraRepository.buscarNotaPorDesc(desc);
         return ResponseEntity.ok(notaFiscalCompras);
+    }
+
+    @PostMapping("/relatorioProdCompradoNotaFiscal")
+    public ResponseEntity<List<ObjetoReqRelatorioProdutoCompraDTO>> relatorioProdCompradoNotaFiscal(@RequestBody @Valid ObjetoReqRelatorioProdutoCompraDTO objetoReqRelatorioProdutoCompraDTO) {
+        List<ObjetoReqRelatorioProdutoCompraDTO> retorno = new ArrayList<>();
+
+        retorno = notaFiscalCompraService.gerarRelatorioProdutoCompra(objetoReqRelatorioProdutoCompraDTO);
+
+        return ResponseEntity.ok(retorno);
     }
 }
