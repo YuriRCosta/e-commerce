@@ -3,7 +3,9 @@ package br.com.ecommerce.ecommerce.controller;
 import br.com.ecommerce.ecommerce.ExceptionECommerce;
 import br.com.ecommerce.ecommerce.model.NotaFiscalCompra;
 import br.com.ecommerce.ecommerce.model.NotaFiscalVenda;
+import br.com.ecommerce.ecommerce.model.dto.ObjetoReqRelatorioProdutoAlertaEstoqueDTO;
 import br.com.ecommerce.ecommerce.model.dto.ObjetoReqRelatorioProdutoCompraDTO;
+import br.com.ecommerce.ecommerce.model.dto.ObjetoReqRelatorioStatusCompraDTO;
 import br.com.ecommerce.ecommerce.repository.NotaFiscalCompraRepository;
 import br.com.ecommerce.ecommerce.repository.NotaFiscalVendaRepository;
 import br.com.ecommerce.ecommerce.service.NotaFiscalCompraService;
@@ -90,6 +92,24 @@ public class NotaFiscalCompraController {
         List<ObjetoReqRelatorioProdutoCompraDTO> retorno = new ArrayList<>();
 
         retorno = notaFiscalCompraService.gerarRelatorioProdutoCompra(objetoReqRelatorioProdutoCompraDTO);
+
+        return ResponseEntity.ok(retorno);
+    }
+
+    @PostMapping("/relatorioProdutoAlertaEstoque")
+    public ResponseEntity<List<ObjetoReqRelatorioProdutoAlertaEstoqueDTO>> relatorioProdutoAlertaEstoque(@RequestBody @Valid ObjetoReqRelatorioProdutoAlertaEstoqueDTO objetoReqRelatorioProdutoAlertaEstoqueDTO) {
+        List<ObjetoReqRelatorioProdutoAlertaEstoqueDTO> retorno = new ArrayList<>();
+
+        retorno = notaFiscalCompraService.gerarRelatorioAlertaEstoque(objetoReqRelatorioProdutoAlertaEstoqueDTO);
+
+        return ResponseEntity.ok(retorno);
+    }
+
+    @PostMapping("/relatorioStatusCompra")
+    public ResponseEntity<List<ObjetoReqRelatorioStatusCompraDTO>> relatorioStatusCompra(@RequestBody @Valid ObjetoReqRelatorioStatusCompraDTO objetoReqRelatorioStatusCompraDTO) {
+        List<ObjetoReqRelatorioStatusCompraDTO> retorno = new ArrayList<>();
+
+        retorno = notaFiscalCompraService.gerarRelatorioStatusCompra(objetoReqRelatorioStatusCompraDTO);
 
         return ResponseEntity.ok(retorno);
     }

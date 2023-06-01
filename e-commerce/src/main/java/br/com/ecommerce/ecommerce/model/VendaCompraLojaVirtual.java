@@ -1,5 +1,6 @@
 package br.com.ecommerce.ecommerce.model;
 
+import br.com.ecommerce.ecommerce.enums.StatusVendaLojaVirtual;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
@@ -81,6 +82,11 @@ public class VendaCompraLojaVirtual implements Serializable {
     @NotNull(message = "O status da venda deve ser informado")
     @OneToMany(mappedBy = "vendaCompraLojaVirtual", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ItemVendaLoja> itensVendaLoja;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    @NotNull(message = "O status da venda deve ser informado")
+    private StatusVendaLojaVirtual statusVendaLojaVirtual;
 
     private Boolean excluido = Boolean.FALSE;
 
