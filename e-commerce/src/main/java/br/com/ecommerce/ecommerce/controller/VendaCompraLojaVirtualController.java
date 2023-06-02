@@ -303,7 +303,11 @@ public class VendaCompraLojaVirtualController {
 
         while (iterator.hasNext()) {
             JsonNode node = iterator.next();
-            idEtiqueta = node.asText();
+            if (node.get("id") != null) {
+                idEtiqueta = node.get("id").asText();
+            } else {
+                idEtiqueta = node.asText();
+            }
             break;
         }
 
@@ -372,5 +376,36 @@ public class VendaCompraLojaVirtualController {
         vendaCompraLojaVirtualRepository.updateUrlEtiqueta(urlEtiqueta, vendaCompraLojaVirtual.getId());
 
         return ResponseEntity.ok().body("Etiqueta gerada com sucesso!");
+    }
+
+    @GetMapping("/cancelarEtiqueta/{idVenda}")
+    public ResponseEntity<String> cancelarEtiqueta(@PathVariable Long idVenda) throws IOException {
+        VendaCompraLojaVirtual vendaCompraLojaVirtual = vendaCompraLojaVirtualRepository.findById(idVenda).orElseGet(null);
+
+        String idEtiqueta = vendaCompraLojaVirtual.getCodigoEtiqueta();
+
+        OkHttpClient client = new OkHttpClient();
+
+        MediaType mediaType = MediaType.parse("application/json");
+        okhttp3.RequestBody body = okhttp3.RequestBody.create(mediaType, "{\"order\":{\"reason_id\":\"2\",\"id\":\""+idEtiqueta+"\",\"description\":\"Cancelamento.\"}}");
+        Request request = new Request.Builder()
+                .url("https://sandbox.melhorenvio.com.br/api/v2/me/shipment/cancel")
+                .post(body)
+                .addHeader("Accept", "application/json")
+                .addHeader("Content-Type", "application/json")
+                .addHeader("Authorization", "Bearer " + ApiTokenIntegracao.TOKEN_MELHOR_ENVIO)
+                .addHeader("User-Agent", "n0xfps1@gmail.com")
+                .build();
+
+        Response response = client.newCall(request).execute();
+
+        if (!response.isSuccessful()) {
+            throw new IOException("Unexpected code " + response);
+        }
+
+        vendaCompraLojaVirtualRepository.updateEtiqueta("", vendaCompraLojaVirtual.getId());
+        vendaCompraLojaVirtualRepository.updateUrlEtiqueta("", vendaCompraLojaVirtual.getId());
+
+        return ResponseEntity.ok().body("Etiqueta cancelada com sucesso!");
     }
 }
