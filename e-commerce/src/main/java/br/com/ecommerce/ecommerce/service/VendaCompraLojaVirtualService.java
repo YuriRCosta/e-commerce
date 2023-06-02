@@ -1,8 +1,20 @@
 package br.com.ecommerce.ecommerce.service;
 
+import br.com.ecommerce.ecommerce.enums.ApiTokenIntegracao;
+import br.com.ecommerce.ecommerce.model.dto.EmpresaTransporteDTO;
+import br.com.ecommerce.ecommerce.model.dto.frete.DeliveryRange;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import okhttp3.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 @Service
 public class VendaCompraLojaVirtualService {
@@ -33,4 +45,45 @@ public class VendaCompraLojaVirtualService {
 
         jdbcTemplate.execute(value);
     }
+
+    public List<EmpresaTransporteDTO> consultarFrete(String json) throws IOException {
+        OkHttpClient client = new OkHttpClient().newBuilder().build();
+
+        MediaType mediaType = MediaType.parse("application/json");
+
+        RequestBody body = RequestBody.create(mediaType, json);
+
+        Request request = new Request.Builder()
+                .url("https://sandbox.melhorenvio.com.br/api/v2/me/shipment/calculate")
+                .post(body)
+                .addHeader("Accept", "application/json")
+                .addHeader("Content-Type", "application/json")
+                .addHeader("Authorization", "Bearer " + ApiTokenIntegracao.TOKEN_MELHOR_ENVIO)
+                .addHeader("User-Agent", "n0xfps1@gmail.com")
+                .build();
+
+        Response response = client.newCall(request).execute();
+        JsonNode jsonNode = new ObjectMapper().readTree(response.body().string());
+        Iterator<JsonNode> jsonNodeIterator = jsonNode.iterator();
+        List<EmpresaTransporteDTO> empresaTransporteDTOList = new ArrayList<>();
+
+        while (jsonNodeIterator.hasNext()) {
+            JsonNode node = jsonNodeIterator.next();
+            EmpresaTransporteDTO empresaTransporteDTO = new EmpresaTransporteDTO();
+
+            if (node.get("error") == null) {
+                empresaTransporteDTO.setId(node.get("id").asText());
+                empresaTransporteDTO.setNome(node.get("name").asText());
+                empresaTransporteDTO.setValor(node.get("price").asText());
+                empresaTransporteDTO.setEmpresa(node.get("company").get("name").asText());
+                empresaTransporteDTO.setPicture(node.get("company").get("picture").asText());
+                empresaTransporteDTO.setDelivery_range(new ObjectMapper().readValue(node.get("delivery_range").toString(), DeliveryRange.class));
+
+                empresaTransporteDTOList.add(empresaTransporteDTO);
+            }
+        }
+
+        return empresaTransporteDTOList;
+    }
+
 }

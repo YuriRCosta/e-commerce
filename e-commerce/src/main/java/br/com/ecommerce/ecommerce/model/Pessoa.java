@@ -1,5 +1,6 @@
 package br.com.ecommerce.ecommerce.model;
 
+import br.com.ecommerce.ecommerce.enums.TipoEndereco;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
@@ -46,6 +47,15 @@ public abstract class Pessoa implements Serializable {
 
     @OneToMany(mappedBy = "pessoa", orphanRemoval = true, cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Endereco> enderecos = new ArrayList<>();
+
+    public Endereco enderecoEntrega() {
+        for(Endereco endereco : enderecos) {
+            if(endereco.getTipoEndereco().name().equals(TipoEndereco.ENTREGA.name())) {
+                return endereco;
+            }
+        }
+        return null;
+    }
 
     public Pessoa getEmpresa() {
         return empresa;

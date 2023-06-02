@@ -90,6 +90,10 @@ public class VendaCompraLojaVirtual implements Serializable {
 
     private Boolean excluido = Boolean.FALSE;
 
+    private String codigoEtiqueta;
+    private String urlImprimeEtiqueta;
+    private String servicoTransportadora;
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -101,6 +105,38 @@ public class VendaCompraLojaVirtual implements Serializable {
     @Override
     public int hashCode() {
         return Objects.hash(id);
+    }
+
+    public String getServicoTransportadora() {
+        return servicoTransportadora;
+    }
+
+    public void setServicoTransportadora(String servicoTransportadora) {
+        this.servicoTransportadora = servicoTransportadora;
+    }
+
+    public String getUrlImprimeEtiqueta() {
+        return urlImprimeEtiqueta;
+    }
+
+    public void setUrlImprimeEtiqueta(String urlImprimeEtiqueta) {
+        this.urlImprimeEtiqueta = urlImprimeEtiqueta;
+    }
+
+    public StatusVendaLojaVirtual getStatusVendaLojaVirtual() {
+        return statusVendaLojaVirtual;
+    }
+
+    public void setStatusVendaLojaVirtual(StatusVendaLojaVirtual statusVendaLojaVirtual) {
+        this.statusVendaLojaVirtual = statusVendaLojaVirtual;
+    }
+
+    public String getCodigoEtiqueta() {
+        return codigoEtiqueta;
+    }
+
+    public void setCodigoEtiqueta(String codigoEtiqueta) {
+        this.codigoEtiqueta = codigoEtiqueta;
     }
 
     public Boolean getExcluido() {

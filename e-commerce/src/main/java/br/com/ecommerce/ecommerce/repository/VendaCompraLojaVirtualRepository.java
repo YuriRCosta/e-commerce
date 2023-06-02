@@ -2,6 +2,7 @@ package br.com.ecommerce.ecommerce.repository;
 
 import br.com.ecommerce.ecommerce.model.VendaCompraLojaVirtual;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -45,4 +46,12 @@ public interface VendaCompraLojaVirtualRepository extends JpaRepository<VendaCom
 
     @Query("select distinct i.vendaCompraLojaVirtual from ItemVendaLoja i where i.vendaCompraLojaVirtual.pessoa.id = ?1 and i.vendaCompraLojaVirtual.excluido = false")
     List<VendaCompraLojaVirtual> vendaPorIdPessoa(Long valor);
+
+    @Modifying
+    @Query(nativeQuery = true, value = "update venda_compra_loja_virtual set codigo_etiqueta = ?1 where id = ?2")
+    void updateEtiqueta(String codigoEtiqueta, Long idVenda);
+
+    @Modifying
+    @Query(nativeQuery = true, value = "update venda_compra_loja_virtual set url_imprime_etiqueta = ?1 where id = ?2")
+    void updateUrlEtiqueta(String urlEtiqueta, Long id);
 }
