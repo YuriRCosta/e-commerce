@@ -15,20 +15,16 @@ public class StatusRastreio implements Serializable {
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_status_rastreio")
     private Long id;
 
-    private String centroDistribuicao;
+    private String urlRastreio;
 
     @JsonIgnore
     @ManyToOne(targetEntity = Pessoa.class)
     @JoinColumn(name = "empresa_id", nullable = false, foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, name = "empresa_fk"))
     private PessoaJuridica empresa;
 
-    private String cidade;
-
-    private String status;
-
     @JsonIgnore
     @ManyToOne
-    @JoinColumn(name = "venda_compra_loja_virtual_id", nullable = false, foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, name = "venda_compra_loja_virtual_fk"))
+    @JoinColumn(name = "venda_compra_loja_virtual_id", nullable = false, unique = true, foreignKey = @ForeignKey(value = ConstraintMode.CONSTRAINT, name = "venda_compra_loja_virtual_fk"))
     private VendaCompraLojaVirtual vendaCompraLojaVirtual;
 
     @Override
@@ -68,27 +64,11 @@ public class StatusRastreio implements Serializable {
         this.id = id;
     }
 
-    public String getCentroDistribuicao() {
-        return centroDistribuicao;
+    public String getUrlRastreio() {
+        return urlRastreio;
     }
 
-    public void setCentroDistribuicao(String centroDistribuicao) {
-        this.centroDistribuicao = centroDistribuicao;
-    }
-
-    public String getCidade() {
-        return cidade;
-    }
-
-    public void setCidade(String cidade) {
-        this.cidade = cidade;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
+    public void setUrlRastreio(String urlRastreio) {
+        this.urlRastreio = urlRastreio;
     }
 }

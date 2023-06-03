@@ -64,14 +64,6 @@ public class VendaCompraLojaVirtualController {
         vendaCompraLojaVirtual.setNotaFiscalVenda(notaFiscalVenda);
         VendaCompraLojaVirtual vendaCompraLojaVirtualSalvo = vendaCompraLojaVirtualRepository.save(vendaCompraLojaVirtual);
 
-        StatusRastreio statusRastreio = new StatusRastreio();
-        statusRastreio.setCentroDistribuicao("Loja Local");
-        statusRastreio.setCidade("São Paulo");
-        statusRastreio.setEmpresa(vendaCompraLojaVirtualSalvo.getEmpresa());
-        statusRastreio.setStatus("Em preparação");
-        statusRastreio.setVendaCompraLojaVirtual(vendaCompraLojaVirtualSalvo);
-        statusRastreioRepository.save(statusRastreio);
-
         notaFiscalVenda.setVendaCompraLojaVirtual(vendaCompraLojaVirtualSalvo);
         notaFiscalVendaRepository.save(notaFiscalVenda);
 
@@ -375,7 +367,42 @@ public class VendaCompraLojaVirtualController {
 
         vendaCompraLojaVirtualRepository.updateUrlEtiqueta(urlEtiqueta, vendaCompraLojaVirtual.getId());
 
-        return ResponseEntity.ok().body("Etiqueta gerada com sucesso!");
+        OkHttpClient clientRastreio = new OkHttpClient();
+
+        MediaType mediaTypeRastreio = MediaType.parse("application/json");
+        okhttp3.RequestBody bodyRastreio = okhttp3.RequestBody.create(mediaTypeRastreio, "{\"orders\":[\"" + idEtiqueta + "\"]}");
+        Request requestRastreio = new Request.Builder()
+                .url("https://sandbox.melhorenvio.com.br/api/v2/me/shipment/tracking")
+                .post(bodyRastreio)
+                .addHeader("Accept", "application/json")
+                .addHeader("Content-type", "application/json")
+                .addHeader("Authorization", "Bearer " + ApiTokenIntegracao.TOKEN_MELHOR_ENVIO)
+                .addHeader("User-Agent", "n0xfps1@gmail.com")
+                .build();
+
+        Response responseRastreio = client.newCall(requestRastreio).execute();
+
+        JsonNode jsonNodeRastreio = new ObjectMapper().readTree(responseRastreio.body().string());
+        Iterator<JsonNode> iteratorRastreio = jsonNodeRastreio.iterator();
+
+        String urlRastreio = "https://app.melhorrastreio.com.br/app/melhorenvio/";
+        while (iteratorRastreio.hasNext()) {
+            JsonNode node = iteratorRastreio.next();
+            if (node.get("tracking") != null) {
+                urlRastreio += node.get("tracking").asText();
+            }
+            break;
+        }
+
+        StatusRastreio statusRastreio = new StatusRastreio();
+
+        statusRastreio.setUrlRastreio(urlRastreio);
+        statusRastreio.setEmpresa(vendaCompraLojaVirtual.getEmpresa());
+        statusRastreio.setVendaCompraLojaVirtual(vendaCompraLojaVirtual);
+
+        statusRastreioRepository.save(statusRastreio);
+
+        return ResponseEntity.ok().body(statusRastreio.getUrlRastreio());
     }
 
     @GetMapping("/cancelarEtiqueta/{idVenda}")
@@ -406,6 +433,13 @@ public class VendaCompraLojaVirtualController {
         vendaCompraLojaVirtualRepository.updateEtiqueta("", vendaCompraLojaVirtual.getId());
         vendaCompraLojaVirtualRepository.updateUrlEtiqueta("", vendaCompraLojaVirtual.getId());
 
+        StatusRastreio statusRastreio = statusRastreioRepository.rastrearVenda(vendaCompraLojaVirtual.getId());
+
+        if (statusRastreio != null) {
+            statusRastreioRepository.delete(statusRastreio);
+        }
+
         return ResponseEntity.ok().body("Etiqueta cancelada com sucesso!");
     }
+
 }
