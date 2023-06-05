@@ -183,4 +183,24 @@ public class ServiceJunoBoleto implements Serializable {
         }
     }
 
+    public String cancelarBoleto(String code) throws Exception {
+        AccessTokenAPIPagamento accessTokenAPIPagamento = buscaTokenAtivo();
+
+        Client client = new HostIgnoringClient("sandbox.boletobancario.com").hostIgnoringClient();
+        WebResource webResource = client.resource("https://sandbox.boletobancario.com/api-integration/charges/" + code + "/cancelation");
+
+        ClientResponse response = webResource
+                .accept(MediaType.APPLICATION_JSON)
+                .header("X-Api-Version", "2")
+                .header("X-Resource-Token", ApiTokenIntegracao.TOKEN_PRIVATE_JUNO)
+                .header("Authorization", "Bearer " + accessTokenAPIPagamento.getTokenAcesso())
+                .put(ClientResponse.class);
+
+        if (response.getStatus() == 204) {
+            return "Boleto cancelado com sucesso";
+        } else {
+            return response.getEntity(String.class);
+        }
+
+    }
 }

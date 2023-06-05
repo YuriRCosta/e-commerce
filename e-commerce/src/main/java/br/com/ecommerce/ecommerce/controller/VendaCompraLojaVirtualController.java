@@ -6,12 +6,14 @@ import br.com.ecommerce.ecommerce.model.*;
 import br.com.ecommerce.ecommerce.model.dto.ConsultaFrete;
 import br.com.ecommerce.ecommerce.model.dto.EmpresaTransporteDTO;
 import br.com.ecommerce.ecommerce.model.dto.EnvioEtiquetaDTO;
+import br.com.ecommerce.ecommerce.model.dto.ObjetoPostCarneJuno;
 import br.com.ecommerce.ecommerce.model.dto.frete.ProductsEnvioEtiqueta;
 import br.com.ecommerce.ecommerce.model.dto.frete.VolumeEnvioEtiqueta;
 import br.com.ecommerce.ecommerce.repository.ContaReceberRepository;
 import br.com.ecommerce.ecommerce.repository.NotaFiscalVendaRepository;
 import br.com.ecommerce.ecommerce.repository.StatusRastreioRepository;
 import br.com.ecommerce.ecommerce.repository.VendaCompraLojaVirtualRepository;
+import br.com.ecommerce.ecommerce.service.ServiceJunoBoleto;
 import br.com.ecommerce.ecommerce.service.ServiceSendEmail;
 import br.com.ecommerce.ecommerce.service.VendaCompraLojaVirtualService;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -49,6 +51,10 @@ public class VendaCompraLojaVirtualController {
 
     @Autowired
     private StatusRastreioRepository statusRastreioRepository;
+
+    @Autowired
+    private ServiceJunoBoleto serviceJunoBoleto;
+
     @Autowired
     private ContaReceberRepository contaReceberRepository;
 
@@ -440,6 +446,16 @@ public class VendaCompraLojaVirtualController {
         }
 
         return ResponseEntity.ok().body("Etiqueta cancelada com sucesso!");
+    }
+
+    @PostMapping("/gerarBoletoPix")
+    public ResponseEntity<String> gerarBoletoPix(@RequestBody @Valid ObjetoPostCarneJuno objetoPostCarneJuno) throws Exception {
+        return ResponseEntity.ok().body(serviceJunoBoleto.gerarCarneApi(objetoPostCarneJuno));
+    }
+
+    @PostMapping("/cancelarBoletoPix")
+    public ResponseEntity<String> cancelarBoletoPix(@RequestBody @Valid String code) throws Exception {
+        return ResponseEntity.ok().body(serviceJunoBoleto.cancelarBoleto(code));
     }
 
 }
