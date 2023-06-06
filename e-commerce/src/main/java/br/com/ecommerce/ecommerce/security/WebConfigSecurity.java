@@ -40,6 +40,7 @@ public class WebConfigSecurity implements HttpSessionListener {
         http.csrf().csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()).disable().authorizeHttpRequests((authorize) -> authorize
                 .requestMatchers("/").permitAll()
                 .requestMatchers("/index").permitAll()
+                .requestMatchers("/requisicaojunoboleto/**").permitAll()
                 .requestMatchers(HttpMethod.OPTIONS ,"/**").permitAll()
                 .anyRequest().authenticated()
         ).logout().logoutSuccessUrl("/index").logoutRequestMatcher(new AntPathRequestMatcher("/logout")).and()
