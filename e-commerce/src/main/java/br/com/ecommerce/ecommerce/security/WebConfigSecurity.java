@@ -57,6 +57,8 @@ public class WebConfigSecurity implements HttpSessionListener {
     public void configure(WebSecurity web) throws Exception {
         web
                 .ignoring()
+                .requestMatchers(HttpMethod.GET ,"/requisicaojunoboleto/**", "/notificacaoapiv2")
+                .requestMatchers(HttpMethod.POST ,"/requisicaojunoboleto/**", "/notificacaoapiv2")
                 .requestMatchers("/static/**"); // #3
     }
 

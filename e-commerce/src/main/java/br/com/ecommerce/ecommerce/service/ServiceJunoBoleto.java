@@ -3,12 +3,9 @@ package br.com.ecommerce.ecommerce.service;
 import br.com.ecommerce.ecommerce.enums.ApiTokenIntegracao;
 import br.com.ecommerce.ecommerce.model.AccessTokenAPIPagamento;
 import br.com.ecommerce.ecommerce.model.BoletoJuno;
+import br.com.ecommerce.ecommerce.model.dto.*;
 import br.com.ecommerce.ecommerce.repository.BoletoJunoRepository;
 import br.com.ecommerce.ecommerce.model.VendaCompraLojaVirtual;
-import br.com.ecommerce.ecommerce.model.dto.BoletoGeradoApiJuno;
-import br.com.ecommerce.ecommerce.model.dto.CobrancaJunoApi;
-import br.com.ecommerce.ecommerce.model.dto.ConteudoBoletoJuno;
-import br.com.ecommerce.ecommerce.model.dto.ObjetoPostCarneJuno;
 import br.com.ecommerce.ecommerce.repository.AccessTokenJunoRepository;
 import br.com.ecommerce.ecommerce.repository.VendaCompraLojaVirtualRepository;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -201,6 +198,63 @@ public class ServiceJunoBoleto implements Serializable {
         } else {
             return response.getEntity(String.class);
         }
+    }
+
+    public String criarWebHook(CriarWebHook criarWebHook) throws Exception {
+        AccessTokenAPIPagamento accessTokenAPIPagamento = buscaTokenAtivo();
+        Client client = new HostIgnoringClient("sandbox.boletobancario.com").hostIgnoringClient();
+        WebResource webResource = client.resource("https://sandbox.boletobancario.com/notifications/webhooks");
+
+        String json = new ObjectMapper().writeValueAsString(criarWebHook);
+
+        ClientResponse response = webResource
+                .accept(MediaType.APPLICATION_JSON)
+                .type(MediaType.APPLICATION_JSON)
+                .header("Content-Type", "application/json")
+                .header("X-Api-Version", "2")
+                .header("X-Resource-Token", ApiTokenIntegracao.TOKEN_PRIVATE_JUNO)
+                .header("Authorization", "Bearer " + accessTokenAPIPagamento.getTokenAcesso())
+                .post(ClientResponse.class, json);
+
+        String retorno = response.getEntity(String.class);
+        response.close();
+
+        return retorno;
+    }
+
+    public String listaWebHook() throws Exception {
+        AccessTokenAPIPagamento accessTokenAPIPagamento = buscaTokenAtivo();
+        Client client = new HostIgnoringClient("sandbox.boletobancario.com").hostIgnoringClient();
+        WebResource webResource = client.resource("https://sandbox.boletobancario.com/notifications/webhooks");
+
+        ClientResponse response = webResource
+                .accept(MediaType.APPLICATION_JSON)
+                .type(MediaType.APPLICATION_JSON)
+                .header("Content-Type", "application/json")
+                .header("X-Api-Version", "2")
+                .header("X-Resource-Token", ApiTokenIntegracao.TOKEN_PRIVATE_JUNO)
+                .header("Authorization", "Bearer " + accessTokenAPIPagamento.getTokenAcesso())
+                .get(ClientResponse.class);
+
+        String retorno = response.getEntity(String.class);
+
+        return retorno;
+    }
+
+    public void deleteWebHook() throws Exception {
+        AccessTokenAPIPagamento accessTokenAPIPagamento = buscaTokenAtivo();
+        Client client = new HostIgnoringClient("sandbox.boletobancario.com").hostIgnoringClient();
+        WebResource webResource = client.resource("https://sandbox.boletobancario.com/notifications/webhooks");
+
+        webResource
+                .accept(MediaType.APPLICATION_JSON)
+                .type(MediaType.APPLICATION_JSON)
+                .header("Content-Type", "application/json")
+                .header("X-Api-Version", "2")
+                .header("X-Resource-Token", ApiTokenIntegracao.TOKEN_PRIVATE_JUNO)
+                .header("Authorization", "Bearer " + accessTokenAPIPagamento.getTokenAcesso())
+                .delete();
 
     }
+
 }
