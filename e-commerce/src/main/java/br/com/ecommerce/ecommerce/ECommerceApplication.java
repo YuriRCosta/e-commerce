@@ -11,6 +11,10 @@ import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
+import org.springframework.web.servlet.ViewResolver;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.springframework.web.servlet.view.InternalResourceViewResolver;
 
 import java.util.concurrent.Executor;
 
@@ -21,7 +25,8 @@ import java.util.concurrent.Executor;
 @EnableTransactionManagement
 @EnableAsync
 @EnableScheduling
-public class ECommerceApplication implements AsyncConfigurer {
+@EnableWebMvc
+public class ECommerceApplication implements AsyncConfigurer, WebMvcConfigurer {
 
 	public static void main(String[] args) {
 		SpringApplication.run(ECommerceApplication.class, args);
@@ -37,5 +42,12 @@ public class ECommerceApplication implements AsyncConfigurer {
 		executor.setThreadNamePrefix("AsyncThread-");
 		executor.initialize();
 		return executor;
+	}
+
+	public ViewResolver viewResolver(){
+		InternalResourceViewResolver resolver = new InternalResourceViewResolver();
+		resolver.setPrefix("classpath:templates/");
+		resolver.setSuffix(".html");
+		return resolver;
 	}
 }

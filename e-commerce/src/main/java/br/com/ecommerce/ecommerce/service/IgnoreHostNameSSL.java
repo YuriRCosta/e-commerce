@@ -2,6 +2,8 @@ package br.com.ecommerce.ecommerce.service;
 
 import javax.net.ssl.*;
 import java.io.Serializable;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
@@ -16,7 +18,7 @@ public class IgnoreHostNameSSL implements HostnameVerifier, Serializable {
         this.trustedHosts = trustedHosts;
     }
 
-    public static HostnameVerifier getDefaultHostnameVerifier() {
+    public static HostnameVerifier getDefaultHostnameVerifier() throws KeyManagementException, NoSuchAlgorithmException {
         TrustManager[] trustAllCerts = new TrustManager[] { new X509TrustManager() {
 
             @Override

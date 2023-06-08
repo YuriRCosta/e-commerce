@@ -39,7 +39,7 @@ public class WebConfigSecurity implements HttpSessionListener {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.csrf().csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()).disable().authorizeHttpRequests((authorize) -> authorize
                 .requestMatchers("/").permitAll()
-                .requestMatchers("/index").permitAll()
+                .requestMatchers("/index", "/pagamento/**", "/resources/**", "/static/**", "/templates/**", "classpath:/static/**", "classpath:/resources/**", "classpath:/templates/**").permitAll()
                 .requestMatchers("/requisicaojunoboleto/**").permitAll()
                 .requestMatchers(HttpMethod.OPTIONS ,"/**").permitAll()
                 .anyRequest().authenticated()
@@ -57,8 +57,8 @@ public class WebConfigSecurity implements HttpSessionListener {
     public void configure(WebSecurity web) throws Exception {
         web
                 .ignoring()
-                .requestMatchers(HttpMethod.GET ,"/requisicaojunoboleto/**", "/notificacaoapiv2")
-                .requestMatchers(HttpMethod.POST ,"/requisicaojunoboleto/**", "/notificacaoapiv2")
+                .requestMatchers(HttpMethod.GET ,"/requisicaojunoboleto/**", "/notificacaoapiv2", "/pagamento/**", "/resources/**", "/static/**", "/templates/**", "classpath:/static/**", "classpath:/resources/**", "classpath:/templates/**")
+                .requestMatchers(HttpMethod.POST ,"/requisicaojunoboleto/**", "/notificacaoapiv2", "/pagamento/**", "/resources/**", "/static/**", "/templates/**", "classpath:/static/**", "classpath:/resources/**", "classpath:/templates/**")
                 .requestMatchers("/static/**"); // #3
     }
 
