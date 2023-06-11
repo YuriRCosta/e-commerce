@@ -3,18 +3,21 @@ package br.com.ecommerce.ecommerce.service;
 import br.com.ecommerce.ecommerce.enums.ApiTokenIntegracao;
 import br.com.ecommerce.ecommerce.model.AccessTokenAPIPagamento;
 import br.com.ecommerce.ecommerce.model.BoletoJuno;
-import br.com.ecommerce.ecommerce.model.dto.*;
-import br.com.ecommerce.ecommerce.repository.BoletoJunoRepository;
 import br.com.ecommerce.ecommerce.model.VendaCompraLojaVirtual;
+import br.com.ecommerce.ecommerce.model.dto.*;
 import br.com.ecommerce.ecommerce.repository.AccessTokenJunoRepository;
+import br.com.ecommerce.ecommerce.repository.BoletoJunoRepository;
 import br.com.ecommerce.ecommerce.repository.VendaCompraLojaVirtualRepository;
+import br.com.ecommerce.ecommerce.util.ValidaCPF;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
 import jakarta.xml.bind.DatatypeConverter;
+import org.apache.tomcat.util.json.JSONParser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -24,10 +27,11 @@ import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 @Service
-public class ServiceJunoBoleto implements Serializable {
+public class ServiceApiPagamento implements Serializable {
 
     @Autowired
     private AccessTokenJunoRepository accessTokenJunoRepository;
@@ -37,8 +41,66 @@ public class ServiceJunoBoleto implements Serializable {
 
     @Autowired
     private VendaCompraLojaVirtualRepository vendaCompraLojaVirtualRepository;
+
     @Autowired
     private BoletoJunoRepository boletoJunoRepository;
+
+    public String buscaClienteAsaas(ObjetoPostCarneJuno dados) throws Exception {
+        String customer_id= "";
+
+        Client client = new HostIgnoringClient(AsaasApiStatus.ULR_API_ASAAS).hostIgnoringClient();
+        WebResource webResource = client.resource(AsaasApiStatus.ULR_API_ASAAS + "customers?email=" + dados.getEmail());
+
+        ClientResponse response = webResource.accept(MediaType.APPLICATION_JSON)
+                .header("Content-Type", "application/json;charset=UTF-8")
+                .header("access_token", AsaasApiStatus.API_KEY)
+                .get(ClientResponse.class);
+
+        LinkedHashMap<String, Object> parser = new JSONParser(response.getEntity(String.class)).parseObject();
+        Integer total = Integer.parseInt(parser.get("totalCount").toString());
+
+        if (total <= 0) {
+            ClienteAsaas clienteAsaas = new ClienteAsaas();
+            if (!ValidaCPF.isCPF(dados.getPayerCpfCnpj())) {
+                throw new Exception("CPF inválido");
+            } else {
+                clienteAsaas.setCpfCnpj(dados.getPayerCpfCnpj());
+            }
+
+            clienteAsaas.setName(dados.getPayerName());
+            clienteAsaas.setEmail(dados.getEmail());
+            clienteAsaas.setPhone(dados.getPayerPhone());
+
+            Client client2 = new HostIgnoringClient(AsaasApiStatus.ULR_API_ASAAS).hostIgnoringClient();
+            WebResource webResource2 = client2.resource(AsaasApiStatus.ULR_API_ASAAS + "customers");
+
+            ClientResponse response2 = webResource2.accept(MediaType.APPLICATION_JSON)
+                    .header("Content-Type", "application/json;charset=UTF-8")
+                    .header("access_token", AsaasApiStatus.API_KEY)
+                    .post(ClientResponse.class, new ObjectMapper().writeValueAsBytes(clienteAsaas));
+
+            LinkedHashMap<String, Object> parser2 = new JSONParser(response2.getEntity(String.class)).parseObject();
+            customer_id = (String) parser2.get("id");
+        } else {
+            List<Object> data = (List<Object>) parser.get("data");
+            customer_id = new Gson().toJsonTree(data.get(0)).getAsJsonObject().get("id").getAsString().replaceAll("\"", "");
+        }
+
+
+
+        return customer_id;
+    }
+
+    public String criarChaveApiAsaas() throws Exception {
+        Client client = new HostIgnoringClient(AsaasApiStatus.ULR_API_ASAAS).hostIgnoringClient();
+        WebResource webResource = client.resource(AsaasApiStatus.ULR_API_ASAAS + "pix/addressKeys");
+        ClientResponse response = webResource.accept(MediaType.APPLICATION_JSON)
+                .header("Content-Type", "application/json;charset=UTF-8")
+                .header("access_token", AsaasApiStatus.API_KEY)
+                .post(ClientResponse.class, "{\"type\":\"EVP\"}");
+
+        return response.getEntity(String.class);
+    }
 
     public String gerarCarneApi(ObjetoPostCarneJuno objetoPostCarneJuno) throws Exception {
         VendaCompraLojaVirtual vendaCompraLojaVirtual = vendaCompraLojaVirtualRepository.findById(objetoPostCarneJuno.getIdVenda()).get();

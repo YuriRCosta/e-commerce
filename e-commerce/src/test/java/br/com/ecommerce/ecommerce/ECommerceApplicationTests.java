@@ -2,8 +2,10 @@ package br.com.ecommerce.ecommerce;
 
 import br.com.ecommerce.ecommerce.controller.AcessoController;
 import br.com.ecommerce.ecommerce.model.Acesso;
+import br.com.ecommerce.ecommerce.model.dto.ObjetoPostCarneJuno;
 import br.com.ecommerce.ecommerce.repository.AcessoRepository;
 import br.com.ecommerce.ecommerce.service.AcessoService;
+import br.com.ecommerce.ecommerce.service.ServiceApiPagamento;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -41,6 +43,30 @@ class ECommerceApplicationTests {
 
 	@Autowired
 	private WebApplicationContext wac;
+
+	@Autowired
+	private ServiceApiPagamento serviceApiPagamento;
+
+	@Test
+	public void testBuscaClienteAsaas() {
+		ObjetoPostCarneJuno objetoPostCarneJuno = new ObjetoPostCarneJuno();
+		objetoPostCarneJuno.setEmail("yuriramoscosta@hotmail.com");
+		objetoPostCarneJuno.setPayerName("Yuri Ramos Costa");
+		objetoPostCarneJuno.setPayerCpfCnpj("04584572054");
+		objetoPostCarneJuno.setPayerPhone("11999999999");
+
+		try {
+			serviceApiPagamento.buscaClienteAsaas(objetoPostCarneJuno);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	@Test
+	public void testCriarChavePixAsaas() throws Exception {
+		String chaveApi = serviceApiPagamento.criarChaveApiAsaas();
+		System.out.println(chaveApi);
+	}
 
 	@Test
 	void testSalvarAcesso() throws Exception {

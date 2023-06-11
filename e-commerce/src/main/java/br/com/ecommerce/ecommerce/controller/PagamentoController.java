@@ -8,7 +8,7 @@ import br.com.ecommerce.ecommerce.model.dto.*;
 import br.com.ecommerce.ecommerce.repository.BoletoJunoRepository;
 import br.com.ecommerce.ecommerce.repository.VendaCompraLojaVirtualRepository;
 import br.com.ecommerce.ecommerce.service.HostIgnoringClient;
-import br.com.ecommerce.ecommerce.service.ServiceJunoBoleto;
+import br.com.ecommerce.ecommerce.service.ServiceApiPagamento;
 import br.com.ecommerce.ecommerce.service.VendaCompraLojaVirtualService;
 import br.com.ecommerce.ecommerce.util.ValidaCPF;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -18,10 +18,12 @@ import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 
 import java.math.BigDecimal;
@@ -41,7 +43,7 @@ public class PagamentoController {
     private VendaCompraLojaVirtualService vendaCompraLojaVirtualSer;
 
     @Autowired
-    private ServiceJunoBoleto serviceJunoBoleto;
+    private ServiceApiPagamento serviceApiPagamento;
 
     @Autowired
     private BoletoJunoRepository boletoJunoRepository;
@@ -99,7 +101,7 @@ public class PagamentoController {
             return ResponseEntity.ok("Valor da venda não pode ser Zero(0).");
         }
 
-        AccessTokenAPIPagamento accessTokenJunoAPI = serviceJunoBoleto.buscaTokenAtivo();
+        AccessTokenAPIPagamento accessTokenJunoAPI = serviceApiPagamento.buscaTokenAtivo();
 
         if (accessTokenJunoAPI == null) {
             return ResponseEntity.ok("Autorização bancária não foi encontrada.");
@@ -219,7 +221,7 @@ public class PagamentoController {
         pagamentoCartaoCredito.getBilling().getAddress().setPostCode(cep.replaceAll("\\-", "").replaceAll("\\.", ""));
 
 
-        Client clientCartao = new HostIgnoringCliente("https://api.juno.com.br/").hostIgnoringCliente();
+        Client clientCartao = new HostIgnoringClient("https://api.juno.com.br/").hostIgnoringClient();
         WebResource webResourceCartao = clientCartao.resource("https://api.juno.com.br/payments");
 
         ObjectMapper objectMapperCartao = new ObjectMapper();
@@ -232,7 +234,7 @@ public class PagamentoController {
                 .header("Content-Type", "application/json;charset=UTF-8")
                 .header("X-API-Version", 2)
                 .header("X-Resource-Token", ApiTokenIntegracao.TOKEN_PRIVATE_JUNO)
-                .header("Authorization", "Bearer " + accessTokenJunoAPI.getAccess_token())
+                .header("Authorization", "Bearer " + accessTokenJunoAPI.getAccessToken())
                 .post(ClientResponse.class, jsonCartao);
 
         String stringRetornoCartao = clientResponseCartao.getEntity(String.class);
@@ -242,51 +244,51 @@ public class PagamentoController {
         if (clientResponseCartao.getStatus() != 200) {
 
             ErroResponseApiJuno erroResponseApiJuno = objectMapper.
-                    readValue(stringRetornoCartao, new TypeReference<ErroResponseApiJuno>() {} );
+                    readValue(stringRetornoCartao, new TypeReference<>() {} );
 
             for (BoletoJuno boletoJuno : boletosJuno) {
-                serviceJunoBoleto.cancelarBoleto(boletoJuno.getCode());
+                serviceApiPagamento.cancelarBoleto(boletoJuno.getCode());
             }
 
-            return new ResponseEntity<String>(erroResponseApiJuno.listaErro(), HttpStatus.OK);
+            return ResponseEntity.ok(erroResponseApiJuno.listaErro());
         }
 
         RetornoPagamentoCartaoJuno retornoPagamentoCartaoJuno = objectMapperCartao.
-                readValue(stringRetornoCartao, new TypeReference<RetornoPagamentoCartaoJuno>() { });
+                readValue(stringRetornoCartao, new TypeReference<>() { });
 
         if (retornoPagamentoCartaoJuno.getPayments().size() <= 0) {
 
             for (BoletoJuno boletoJuno : boletosJuno) {
-                serviceJunoBoleto.cancelarBoleto(boletoJuno.getCode());
+                serviceApiPagamento.cancelarBoleto(boletoJuno.getCode());
             }
 
-            return new ResponseEntity<String>("Nenhum pagamento foi retornado para processar.", HttpStatus.OK);
+            return ResponseEntity.ok("Nenhum pagamento foi retornado para processar.");
         }
 
         PaymentsCartaoCredito cartaoCredito = retornoPagamentoCartaoJuno.getPayments().get(0);
 
         if (!cartaoCredito.getStatus().equalsIgnoreCase("CONFIRMED")) {
             for (BoletoJuno boletoJuno : boletosJuno) {
-                serviceJunoBoleto.cancelarBoleto(boletoJuno.getCode());
+                serviceApiPagamento.cancelarBoleto(boletoJuno.getCode());
             }
         }
 
         if (cartaoCredito.getStatus().equalsIgnoreCase("DECLINED")) {
-            return new ResponseEntity<String>("Pagamento rejeito pela análise de risco", HttpStatus.OK);
+            return ResponseEntity.ok("Pagamento rejeito pela análise de risco");
         }else  if (cartaoCredito.getStatus().equalsIgnoreCase("FAILED")) {
-            return new ResponseEntity<String>("Pagamento não realizado por falha", HttpStatus.OK);
+            return ResponseEntity.ok("Pagamento não realizado por falha");
         }
         else  if (cartaoCredito.getStatus().equalsIgnoreCase("NOT_AUTHORIZED")) {
-            return new ResponseEntity<String>("Pagamento não autorizado pela instituição responsável pleo cartão de crédito, no caso, a emissora do seu cartão.", HttpStatus.OK);
+            return ResponseEntity.ok("Pagamento não autorizado pela instituição responsável pleo cartão de crédito, no caso, a emissora do seu cartão.");
         }
         else  if (cartaoCredito.getStatus().equalsIgnoreCase("CUSTOMER_PAID_BACK")) {
-            return new ResponseEntity<String>("Pagamento estornado a pedido do cliente.", HttpStatus.OK);
+            return ResponseEntity.ok("Pagamento estornado a pedido do cliente.");
         }
         else  if (cartaoCredito.getStatus().equalsIgnoreCase("BANK_PAID_BACK")) {
-            return new ResponseEntity<String>("Pagamento estornado a pedido do banco.", HttpStatus.OK);
+            return ResponseEntity.ok("Pagamento estornado a pedido do banco.");
         }
         else  if (cartaoCredito.getStatus().equalsIgnoreCase("PARTIALLY_REFUNDED")) {
-            return new ResponseEntity<String>("Pagamento parcialmente estornado.", HttpStatus.OK);
+            return ResponseEntity.ok("Pagamento parcialmente estornado.");
         }
         else  if (cartaoCredito.getStatus().equalsIgnoreCase("CONFIRMED")) {
 
@@ -294,13 +296,13 @@ public class PagamentoController {
                 boletoJunoRepository.quitarBoletoById(boletoJuno.getId());
             }
 
-            vd_Cp_Loja_virt_repository.updateFinalizaVenda(vendaCompraLojaVirtual.getId());
+            vendaCompraLojaVirtualRepository.updateFinalizaVenda(vendaCompraLojaVirtual.getId());
 
-            return new ResponseEntity<String>("sucesso", HttpStatus.OK);
+            return ResponseEntity.ok("sucesso");
         }
 
 
-        return new ResponseEntity<String>("Nenhuma operação realizada!", HttpStatus.OK);
+        return ResponseEntity.ok("Nenhuma operação realizada!");
 
     }
 

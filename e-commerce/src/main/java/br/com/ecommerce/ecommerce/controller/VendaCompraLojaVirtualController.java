@@ -13,7 +13,7 @@ import br.com.ecommerce.ecommerce.repository.ContaReceberRepository;
 import br.com.ecommerce.ecommerce.repository.NotaFiscalVendaRepository;
 import br.com.ecommerce.ecommerce.repository.StatusRastreioRepository;
 import br.com.ecommerce.ecommerce.repository.VendaCompraLojaVirtualRepository;
-import br.com.ecommerce.ecommerce.service.ServiceJunoBoleto;
+import br.com.ecommerce.ecommerce.service.ServiceApiPagamento;
 import br.com.ecommerce.ecommerce.service.ServiceSendEmail;
 import br.com.ecommerce.ecommerce.service.VendaCompraLojaVirtualService;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -53,7 +53,7 @@ public class VendaCompraLojaVirtualController {
     private StatusRastreioRepository statusRastreioRepository;
 
     @Autowired
-    private ServiceJunoBoleto serviceJunoBoleto;
+    private ServiceApiPagamento serviceApiPagamento;
 
     @Autowired
     private ContaReceberRepository contaReceberRepository;
@@ -450,12 +450,12 @@ public class VendaCompraLojaVirtualController {
 
     @PostMapping("/gerarBoletoPix")
     public ResponseEntity<String> gerarBoletoPix(@RequestBody @Valid ObjetoPostCarneJuno objetoPostCarneJuno) throws Exception {
-        return ResponseEntity.ok().body(serviceJunoBoleto.gerarCarneApi(objetoPostCarneJuno));
+        return ResponseEntity.ok().body(serviceApiPagamento.gerarCarneApi(objetoPostCarneJuno));
     }
 
     @PostMapping("/cancelarBoletoPix")
     public ResponseEntity<String> cancelarBoletoPix(@RequestBody @Valid String code) throws Exception {
-        return ResponseEntity.ok().body(serviceJunoBoleto.cancelarBoleto(code));
+        return ResponseEntity.ok().body(serviceApiPagamento.cancelarBoleto(code));
     }
 
 }

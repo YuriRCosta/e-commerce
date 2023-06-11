@@ -42,7 +42,7 @@ public class HostIgnoringClient {
             }
         } };
 
-        SSLContext sslContext = SSLContext.getInstance("TSL");
+        SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
         sslContext.init(null, trustAllCerts, new SecureRandom());
 
         Set<String> hostNameList = new HashSet<>();
