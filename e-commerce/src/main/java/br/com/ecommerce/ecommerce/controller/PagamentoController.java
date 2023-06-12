@@ -3,6 +3,7 @@ package br.com.ecommerce.ecommerce.controller;
 import br.com.ecommerce.ecommerce.enums.ApiTokenIntegracao;
 import br.com.ecommerce.ecommerce.model.AccessTokenAPIPagamento;
 import br.com.ecommerce.ecommerce.model.BoletoJuno;
+import br.com.ecommerce.ecommerce.model.PessoaFisica;
 import br.com.ecommerce.ecommerce.model.VendaCompraLojaVirtual;
 import br.com.ecommerce.ecommerce.model.dto.*;
 import br.com.ecommerce.ecommerce.repository.BoletoJunoRepository;
@@ -31,6 +32,7 @@ import java.math.RoundingMode;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 @Controller
@@ -64,6 +66,167 @@ public class PagamentoController {
     }
 
     @PostMapping("/finalizarCompraCartao")
+    public ResponseEntity<String> finalizarCompraCartaoAsaas(
+            @RequestParam("cardNumber") String cardNumber,
+            @RequestParam("holderName") String holderName,
+            @RequestParam("securityCode") String securityCode,
+            @RequestParam("expirationMonth") String expirationMonth,
+            @RequestParam("expirationYear") String expirationYear,
+            @RequestParam("idVendaCampo") Long idVendaCampo,
+            @RequestParam("cpf") String cpf,
+            @RequestParam("qtdparcela") Integer qtdparcela,
+            @RequestParam("cep") String cep,
+            @RequestParam("rua") String rua,
+            @RequestParam("numero") String numero,
+            @RequestParam("estado") String estado,
+            @RequestParam("cidade") String cidade) throws Exception{
+
+        VendaCompraLojaVirtual vendaCompraLojaVirtual = vendaCompraLojaVirtualRepository.
+                findById(idVendaCampo).orElse(null);
+
+        if (vendaCompraLojaVirtual == null) {
+            return ResponseEntity.ok("Código da venda não existe!");
+        }
+
+        String cpfLimpo =  cpf.replaceAll("\\.", "").replaceAll("\\-", "");
+
+        if (!ValidaCPF.isCPF(cpfLimpo)) {
+            return ResponseEntity.ok("CPF informado é inválido.");
+        }
+
+        if (qtdparcela > 12 || qtdparcela <= 0) {
+            return ResponseEntity.ok("Quantidade de parcelar deve ser de  1 até 12.");
+        }
+
+        if (vendaCompraLojaVirtual.getValorTotal().doubleValue() <= 0) {
+            return ResponseEntity.ok("Valor da venda não pode ser Zero(0).");
+        }
+
+        List<BoletoJuno> cobrancas = boletoJunoRepository.cobrancaVendaCompra(vendaCompraLojaVirtual.getId());
+
+        for (BoletoJuno boletoJuno : cobrancas) {
+            boletoJunoRepository.deleteById(boletoJuno.getId());
+        }
+
+        ObjetoPostCarneJuno objetoPostCarneJuno = new ObjetoPostCarneJuno();
+
+        objetoPostCarneJuno.setPayerCpfCnpj(cpfLimpo);
+        objetoPostCarneJuno.setPayerName(holderName);
+        objetoPostCarneJuno.setPayerPhone(vendaCompraLojaVirtual.getPessoa().getTelefone());
+
+        CobrancaApiAsaasCartao cobrancaApiAsaasCartao = new CobrancaApiAsaasCartao();
+        cobrancaApiAsaasCartao.setCustomer(serviceApiPagamento.buscaClienteAsaas(objetoPostCarneJuno));
+        cobrancaApiAsaasCartao.setBillingType(AsaasApiStatus.CREDIT_CARD);
+        cobrancaApiAsaasCartao.setDescription("Venda realizada para cliente por cartao de credito: idVenda: " + vendaCompraLojaVirtual.getId());
+
+        if (qtdparcela == 1) {
+            cobrancaApiAsaasCartao.setInstallmentValue(vendaCompraLojaVirtual.getValorTotal().floatValue());
+        } else {
+            BigDecimal valorParcela = vendaCompraLojaVirtual.getValorTotal().divide(BigDecimal.valueOf(qtdparcela), RoundingMode.DOWN).setScale(2, RoundingMode.DOWN);
+            cobrancaApiAsaasCartao.setInstallmentValue(valorParcela.floatValue());
+        }
+
+        cobrancaApiAsaasCartao.setInstallmentCount(qtdparcela);
+        cobrancaApiAsaasCartao.setDueDate(new SimpleDateFormat("yyyy-MM-dd").format(Calendar.getInstance().getTime()));
+
+        CartaoCreditoApiAsaas creditCard = new CartaoCreditoApiAsaas();
+        creditCard.setHolderName(holderName);
+        creditCard.setNumber(cardNumber);
+        creditCard.setCcv(securityCode);
+        creditCard.getExpiryMonth(expirationMonth);
+        creditCard.getExpiryYear(expirationYear);
+
+        cobrancaApiAsaasCartao.setCreditCard(creditCard);
+
+        PessoaFisica pessoaFisica = vendaCompraLojaVirtual.getPessoa();
+        HolderInfoCreditCardAsaas holderInfoCreditCardAsaas = new HolderInfoCreditCardAsaas();
+
+        holderInfoCreditCardAsaas.setCpfCnpj(pessoaFisica.getCpf());
+        holderInfoCreditCardAsaas.setName(pessoaFisica.getNome());
+        holderInfoCreditCardAsaas.setPhone(pessoaFisica.getTelefone());
+        holderInfoCreditCardAsaas.setEmail(pessoaFisica.getEmail());
+        holderInfoCreditCardAsaas.setAddressNumber(numero);
+        holderInfoCreditCardAsaas.setAddressComplement(null);
+        holderInfoCreditCardAsaas.setMobilePhone(pessoaFisica.getTelefone());
+        holderInfoCreditCardAsaas.setPostalCode(cep);
+
+        cobrancaApiAsaasCartao.setCreditCardHolderInfo(holderInfoCreditCardAsaas);
+
+        String json = new ObjectMapper().writeValueAsString(cobrancaApiAsaasCartao);
+
+        Client client = new HostIgnoringClient(AsaasApiStatus.ULR_API_ASAAS).hostIgnoringClient();
+        WebResource webResource = client.resource(AsaasApiStatus.ULR_API_ASAAS + "payments");
+
+        ClientResponse response = webResource.accept("application/json;charset=UTF-8")
+                .header("access_token", AsaasApiStatus.API_KEY)
+                .header("Content-Type", "application/json")
+                .post(ClientResponse.class, json);
+
+        String resposta = response.getEntity(String.class);
+        int status = response.getStatus();
+
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.enable(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT);
+        mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+
+        if (status != 200) {
+            for (BoletoJuno boletoJuno : cobrancas) {
+                boletoJunoRepository.deleteById(boletoJuno.getId());
+            }
+
+            ErroResponseAsaas erroResponseAsaas = mapper.readValue(resposta, ErroResponseAsaas.class);
+
+            return ResponseEntity.ok("Erro ao gerar cobrança: " + erroResponseAsaas.listaErros());
+        }
+
+        DataCartaoCreditoCobrancaGeradaAsaas cartaoCredito = mapper.readValue(resposta, DataCartaoCreditoCobrancaGeradaAsaas.class);
+
+        int recorrencia = 1;
+        List<BoletoJuno> boletosJuno = new ArrayList<>();
+
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        Date dataCobranca = sdf.parse(cobrancaApiAsaasCartao.getDueDate());
+        Calendar calendar = Calendar.getInstance();
+
+        for (int p = 1; p <= qtdparcela; p++) {
+            BoletoJuno boletoJuno = new BoletoJuno();
+            boletoJuno.setChargeICartao(cartaoCredito.getId());
+            boletoJuno.setCheckoutUrl(cartaoCredito.getInvoiceUrl());
+            boletoJuno.setCode(cartaoCredito.getId());
+
+            calendar.setTime(dataCobranca);
+            calendar.add(Calendar.MONTH, 1);
+            dataCobranca = calendar.getTime();
+
+            boletoJuno.setEmpresa(vendaCompraLojaVirtual.getEmpresa());
+            boletoJuno.setIdChrBoleto(cartaoCredito.getId());
+            boletoJuno.setIdPix(cartaoCredito.getId());
+            boletoJuno.setInstallmentLink(cartaoCredito.getInvoiceUrl());
+            boletoJuno.setQuitado(false);
+            boletoJuno.setRecorrencia(recorrencia);
+            boletoJuno.setValor(BigDecimal.valueOf(cobrancaApiAsaasCartao.getInstallmentValue()));
+            boletoJuno.setVendaCompraLojaVirtual(vendaCompraLojaVirtual);
+
+            recorrencia++;
+            boletosJuno.add(boletoJuno);
+        }
+
+        boletoJunoRepository.saveAllAndFlush(boletosJuno);
+
+        if (cartaoCredito.getStatus().equalsIgnoreCase("CONFIRMED")) {
+            for (BoletoJuno boletoJuno : boletosJuno) {
+                boletoJunoRepository.quitarBoletoById(boletoJuno.getId());
+            }
+
+            vendaCompraLojaVirtualRepository.updateFinalizaVenda(vendaCompraLojaVirtual.getId());
+
+            return ResponseEntity.ok("Venda finalizada com sucesso!");
+        } else {
+            return ResponseEntity.ok("Pagamento nao pode ser finalizado! Status da cobrança: " + cartaoCredito.getStatus());
+        }
+    }
+
+    @PostMapping("/finalizarCompraCartaoJuno")
     public ResponseEntity<String> finalizarCompraCartao(
             @RequestParam("cardHash") String cardHash,
             @RequestParam("cardNumber") String cardNumber,

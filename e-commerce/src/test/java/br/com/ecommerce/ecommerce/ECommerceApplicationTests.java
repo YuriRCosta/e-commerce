@@ -48,6 +48,19 @@ class ECommerceApplicationTests {
 	private ServiceApiPagamento serviceApiPagamento;
 
 	@Test
+	public void testGerarCarneAsaas() throws Exception {
+		ObjetoPostCarneJuno objetoPostCarneJuno = new ObjetoPostCarneJuno();
+		objetoPostCarneJuno.setEmail("yuriramoscosta@hotmail.com");
+		objetoPostCarneJuno.setPayerName("Yuri Ramos Costa");
+		objetoPostCarneJuno.setPayerCpfCnpj("04584572054");
+		objetoPostCarneJuno.setPayerPhone("11999999999");
+		objetoPostCarneJuno.setIdVenda(42L);
+
+		String retorno = serviceApiPagamento.gerarCarneAsaas(objetoPostCarneJuno);
+		System.out.println(retorno);
+	}
+
+	@Test
 	public void testBuscaClienteAsaas() {
 		ObjetoPostCarneJuno objetoPostCarneJuno = new ObjetoPostCarneJuno();
 		objetoPostCarneJuno.setEmail("yuriramoscosta@hotmail.com");
