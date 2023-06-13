@@ -171,7 +171,9 @@ public class PagamentoController {
 
         if (status != 200) {
             for (BoletoJuno boletoJuno : cobrancas) {
-                boletoJunoRepository.deleteById(boletoJuno.getId());
+                if (boletoJunoRepository.existsById(boletoJuno.getId())) {
+                    boletoJunoRepository.deleteById(boletoJuno.getId());
+                }
             }
 
             ErroResponseAsaas erroResponseAsaas = mapper.readValue(resposta, ErroResponseAsaas.class);

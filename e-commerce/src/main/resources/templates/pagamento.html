@@ -4,23 +4,12 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
-    <script type="text/javascript" src="https://corebanking-sandbox-admin.ebanx.com/boletofacil/wro/direct-checkout.min.js"></script><link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
-
-    <!-- Optional theme -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css">
-
-    <!-- Latest compiled and minified JavaScript -->
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
-
-
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.9.1/jquery.js"></script>
-
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
-
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.9.1/jquery.min.map"></script>
-
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
-
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.js"></script>
 </head>
 <body>
@@ -191,7 +180,6 @@
 </div>
 
 <script type="text/javascript">
-    var checkout = new DirectCheckout('10951138DA2E18AA0275F43ACA03649EC406D9F5331D9F78CC4169A965B873AB35FFAEE08E46454E');
 
     $(document).ready(function() {
 
@@ -348,7 +336,7 @@
         };
 
 
-        var isValidCardNumber = checkout.isValidCardNumber(cardData.cardNumber);
+        var isValidCardNumber = cardData.cardNumber;
 
         if (isValidCardNumber == false) {
             alert('Número do cartão é inválido');
@@ -356,7 +344,7 @@
         }
 
 
-        var isValidSecurityCode = checkout.isValidSecurityCode(cardData.cardNumber, cvv);
+        var isValidSecurityCode = cardData.cardNumber != null && cvv != null;
 
         if (isValidSecurityCode == false) {
             alert('Códivo CVV de segurança é inválido.');
@@ -364,25 +352,14 @@
         }
 
 
-        var isValidExpireDate = checkout.isValidExpireDate(cardData.expirationMonth, cardData.expirationYear);
+        var isValidExpireDate = cardData.expirationMonth != null && cardData.expirationYear != null;
 
         if (isValidExpireDate == false) {
             alert('Data de válidade é inválida');
             return;
         }
 
-
-        var isValidCardData = checkout.isValidCardData(cardData, function (error) {
-
-            if (error.toString().includes('Invalid holder name', error)) {
-                alert('Seu nome informado não está igual ao escrito no cartão de crédito.');
-            } else {
-                alert('Mensagem de erro: ' + error.toString());
-            }
-
-            return;
-        });
-
+        var isValidCardData = cardData != null && cardData.holderName != null;
 
         // console.info('isValidCardData' + isValidCardData);
         // console.info('isValidExpireDate' + isValidExpireDate);
@@ -391,59 +368,48 @@
 
         if (isValidCardData && isValidExpireDate && isValidSecurityCode && isValidCardNumber) {
 
-            checkout.getCardHash(cardData, function (cardHash) {
+            document.getElementById('buttonrealizarPagamento').disabled = true;
+            document.getElementById('buttonrealizarPagamento').value = 'Efetuando pagamento...';
 
-                document.getElementById('buttonrealizarPagamento').disabled = true;
-                document.getElementById('buttonrealizarPagamento').value = 'Efetuando pagamento...';
+            $.ajax({
+                method: 'POST',
+                url: 'finalizarCompraCartao',
+                data: {
+                    cardNumber: cardData.cardNumber,
+                    holderName: cardData.holderName,
+                    securityCode: cardData.securityCode,
+                    expirationMonth: cardData.expirationMonth,
+                    expirationYear: cardData.expirationYear,
+                    idVendaCampo: idVendaCampo,
+                    cpf: cpf,
+                    qtdparcela: qtdparcela,
+                    cep: cep,
+                    rua: rua,
+                    numero: numero,
+                    estado: estado,
+                    cidade: cidade
+                }
+            }).success(function (response) {
 
-                $.ajax({
-                    method: 'POST',
-                    url: 'finalizarCompraCartao',
-                    data: {
-                        cardHash: cardHash,
-                        cardNumber: cardData.cardNumber,
-                        holderName: cardData.holderName,
-                        securityCode: cardData.securityCode,
-                        expirationMonth: cardData.expirationMonth,
-                        expirationYear: cardData.expirationYear,
-                        idVendaCampo: idVendaCampo,
-                        cpf: cpf,
-                        qtdparcela: qtdparcela,
-                        cep: cep,
-                        rua: rua,
-                        numero: numero,
-                        estado: estado,
-                        cidade: cidade
-                    }
-                }).success(function (response) {
-
-                    if (response == 'sucesso') {
-                        document.getElementById('buttonrealizarPagamento').disabled = true;
-                        document.getElementById('buttonrealizarPagamento').value = 'Sucesso, OK... Pago';
-                    } else {
-
-                        document.getElementById('buttonrealizarPagamento').disabled = false;
-                        document.getElementById('buttonrealizarPagamento').value = 'Realizar Pagamento';
-
-                        alert(response);
-                    }
-
-                }).fail(function (xhr, status, errorThrown) {
+                if (response == 'sucesso') {
+                    document.getElementById('buttonrealizarPagamento').disabled = true;
+                    document.getElementById('buttonrealizarPagamento').value = 'Sucesso, OK... Pago';
+                } else {
 
                     document.getElementById('buttonrealizarPagamento').disabled = false;
                     document.getElementById('buttonrealizarPagamento').value = 'Realizar Pagamento';
 
-                    alert('Erro ao efetuar pagamento: ' + errorThrown);
-                    return;
-                });
+                    alert(response);
+                }
 
+            }).fail(function (xhr, status, errorThrown) {
 
-            }, function (error) {
-                alert('Não foi possível gerar o HASH do cartão de crédito": ' + error);
+                document.getElementById('buttonrealizarPagamento').disabled = false;
+                document.getElementById('buttonrealizarPagamento').value = 'Realizar Pagamento';
+
+                alert('Erro ao efetuar pagamento: ' + errorThrown);
                 return;
-
             });
-
         } else {
             alert('O pagamento não pode ser realizado.');
             return;
