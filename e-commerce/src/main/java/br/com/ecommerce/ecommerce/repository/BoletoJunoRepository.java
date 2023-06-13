@@ -13,7 +13,7 @@ public interface BoletoJunoRepository extends JpaRepository<BoletoJuno, Long> {
     @Query(value = "select b from BoletoJuno b where b.code = ?1")
     public BoletoJuno findByCodigoBoletoPix(String codigoBoletoPix);
 
-    @Query(value = "select b from BoletoJuno b where b.id = ?1 and b.quitado = false")
+    @Query(value = "select b from BoletoJuno b where b.vendaCompraLojaVirtual.id = ?1 and b.quitado = false")
     public List<BoletoJuno> cobrancaVendaCompra(Long codigoVendaCompra);
 
     @Transactional
