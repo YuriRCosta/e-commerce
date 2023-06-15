@@ -15,6 +15,9 @@ public interface NotaFiscalVendaRepository extends JpaRepository<NotaFiscalVenda
     @Query(value = "select a from NotaFiscalVenda a where a.vendaCompraLojaVirtual.id = ?1")
     List<NotaFiscalVenda> findByVendaCompraLojaVirtualId(Long idVenda);
 
+    @Query(value = "select a from NotaFiscalVenda a where a.vendaCompraLojaVirtual.id = ?1")
+    NotaFiscalVenda findByVendaId(Long idVenda);
+
 
 
 }

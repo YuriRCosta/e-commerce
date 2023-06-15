@@ -6,4 +6,7 @@ public class ApiTokenIntegracao {
     public static final String URL_MELHOR_ENVIO = "https://sandbox.melhorenvio.com.br";
     public static final String TOKEN_PRIVATE_JUNO = "D2E6C2F1C";
     public static final String CHAVE_BOLETO_PIX = "chave pix";
+
+    public static final String URL_GET_RESPONSE = "https://api.getresponse.com/v3/";
+    public static final String TOKEN_GET_RESPONSE = "api-key vsflu1tmo6h1v5kjffruse95c6g6hp3k";
 }

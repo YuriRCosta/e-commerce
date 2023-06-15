@@ -23,6 +23,9 @@ public class NotaFiscalVenda implements Serializable{
     private String numeroNota;
 
     @Column(nullable = false)
+    private String chave;
+
+    @Column(nullable = false)
     private String numeroSerie;
 
     @Column(nullable = false)
@@ -50,6 +53,14 @@ public class NotaFiscalVenda implements Serializable{
     @Override
     public int hashCode() {
         return Objects.hash(id);
+    }
+
+    public String getChave() {
+        return chave;
+    }
+
+    public void setChave(String chave) {
+        this.chave = chave;
     }
 
     public PessoaJuridica getEmpresa() {
